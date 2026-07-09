@@ -76,4 +76,253 @@
         .drawer-label { font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .actions-row { display: flex; gap: 8px; margin-top: 12px; }
-        .action-btn { flex: 1; border: 1px solid transparent; padding
+        .action-btn { flex: 1; border: 1px solid transparent; padding: 8px; font-size: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; text-align: center; }
+        .action-btn.edit { color: #b45309; background-color: #fffbeb; border-color: #fde68a; }
+        .action-btn.edit:active { background-color: #fef3c7; }
+        .action-btn.delete { color: #e11d48; background-color: #fff1f2; border-color: #fecdd3; }
+        .action-btn.delete:active { background-color: #ffe4e6; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="tabs-bar">
+            <button id="calcTab" onclick="switchTab('calculator')" class="tab-btn active">🧮 Calculator</button>
+            <button id="historyTab" onclick="switchTab('history')" class="tab-btn">📜 Logs (<span id="historyCount">0</span>)</button>
+        </div>
+
+        <div id="calculatorView" class="view-layout">
+            <div class="screen-monitor">
+                <div id="calcFormula" class="formula-line"></div>
+                <div id="calcDisplay" class="display-line">0</div>
+            </div>
+
+            <div>
+                <span class="selector-label">Payment Method</span>
+                <div class="mode-row">
+                    <button id="modeCash" onclick="setPaymentMode('CASH')" class="mode-btn cash-active">💵 CASH</button>
+                    <button id="modeOnline" onclick="setPaymentMode('ONLINE')" class="mode-btn">💳 ONLINE</button>
+                </div>
+            </div>
+
+            <div class="keypad-grid">
+                <button onclick="press('7')" class="key-btn">7</button>
+                <button onclick="press('8')" class="key-btn">8</button>
+                <button onclick="press('9')" class="key-btn">9</button>
+                <button onclick="press('/')" class="key-btn operator">/</button>
+
+                <button onclick="press('4')" class="key-btn">4</button>
+                <button onclick="press('5')" class="key-btn">5</button>
+                <button onclick="press('6')" class="key-btn">6</button>
+                <button onclick="press('*')" class="key-btn operator">*</button>
+
+                <button onclick="press('1')" class="key-btn">1</button>
+                <button onclick="press('2')" class="key-btn">2</button>
+                <button onclick="press('3')" class="key-btn">3</button>
+                <button onclick="press('-')" class="key-btn operator">-</button>
+
+                <button onclick="press('0')" class="key-btn wide-zero">0</button>
+                <button onclick="press('.')" class="key-btn">.</button>
+                <button onclick="press('C')" class="key-btn clear">C</button>
+                
+                <button onclick="press('=')" class="key-btn equals">=</button>
+                <button onclick="press('+')" class="key-btn operator">+</button>
+            </div>
+
+            <button onclick="saveBill()" class="save-btn">💾 SAVE BILL LOG</button>
+        </div>
+
+        <div id="historyView" class="history-wrapper hidden">
+            <div id="emptyState" class="empty-text">No saved bills yet.</div>
+            <div id="logList"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentDisplay = '';
+        let formulaHistoryStr = '';
+        let selectedMode = 'CASH';
+        let logs = JSON.parse(localStorage.getItem('billing_logs')) || [];
+
+        updateHistoryUI();
+
+        function press(val) {
+            const displayEl = document.getElementById('calcDisplay');
+            const formulaEl = document.getElementById('calcFormula');
+            
+            if (val === 'C') {
+                currentDisplay = '';
+                formulaHistoryStr = '';
+                displayEl.innerText = '0';
+                formulaEl.innerText = '';
+            } else if (val === '=') {
+                try {
+                    if (!currentDisplay) return;
+                    formulaHistoryStr = currentDisplay;
+                    formulaEl.innerText = formulaHistoryStr + ' =';
+                    
+                    let result = new Function(`return ${currentDisplay}`)();
+                    currentDisplay = String(Number(result).toFixed(2));
+                    displayEl.innerText = currentDisplay;
+                } catch {
+                    alert('Calculation error');
+                    formulaHistoryStr = '';
+                    formulaEl.innerText = '';
+                }
+            } else {
+                if (currentDisplay && !isNaN(val) && formulaHistoryStr !== '' && currentDisplay === displayEl.innerText) {
+                    currentDisplay = '';
+                    formulaHistoryStr = '';
+                    formulaEl.innerText = '';
+                }
+                currentDisplay += val;
+                displayEl.innerText = currentDisplay;
+            }
+        }
+
+        function setPaymentMode(mode) {
+            selectedMode = mode;
+            const cashBtn = document.getElementById('modeCash');
+            const onlineBtn = document.getElementById('modeOnline');
+            
+            if (mode === 'CASH') {
+                cashBtn.className = "mode-btn cash-active";
+                onlineBtn.className = "mode-btn";
+            } else {
+                cashBtn.className = "mode-btn";
+                onlineBtn.className = "mode-btn online-active";
+            }
+        }
+
+        function saveBill() {
+            const amount = parseFloat(currentDisplay);
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please calculate a valid value first.');
+                return;
+            }
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const calculationFormula = formulaHistoryStr || `${amount}`;
+            
+            const logId = Date.now();
+
+            const newLog = { id: logId, amount, formula: calculationFormula, mode: selectedMode, date: dateStr, time: timeStr };
+            logs.unshift(newLog);
+            localStorage.setItem('billing_logs', JSON.stringify(logs));
+            
+            alert(`Saved: ₹${amount.toFixed(2)} via ${selectedMode}`);
+            
+            currentDisplay = '';
+            formulaHistoryStr = '';
+            document.getElementById('calcDisplay').innerText = '0';
+            document.getElementById('calcFormula').innerText = '';
+            
+            updateHistoryUI();
+        }
+
+        function toggleLogDetails(id) {
+            const el = document.getElementById(`details-${id}`);
+            if(el) {
+                el.classList.toggle('hidden');
+            }
+        }
+
+        function deleteLog(id) {
+            if (confirm('Delete this record permanently?')) {
+                logs = logs.filter(log => log.id !== id);
+                localStorage.setItem('billing_logs', JSON.stringify(logs));
+                updateHistoryUI();
+            }
+        }
+
+        function editLog(id) {
+            const index = logs.findIndex(log => log.id === id);
+            if (index === -1) return;
+
+            const currentAmount = logs[index].amount;
+            const newAmountStr = prompt("Enter new bill total amount:", currentAmount.toFixed(2));
+            
+            if (newAmountStr === null) return; 
+            
+            const newAmount = parseFloat(newAmountStr);
+            if (isNaN(newAmount) || newAmount <= 0) {
+                alert("Please write a valid currency number value.");
+                return;
+            }
+
+            logs[index].amount = newAmount;
+            logs[index].formula = `${newAmount.toFixed(2)} (Edited)`;
+            
+            localStorage.setItem('billing_logs', JSON.stringify(logs));
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            document.getElementById('historyCount').innerText = logs.length;
+            const listEl = document.getElementById('logList');
+            const emptyEl = document.getElementById('emptyState');
+            
+            if (logs.length === 0) {
+                emptyEl.classList.remove('hidden');
+                listEl.innerHTML = '';
+                return;
+            }
+            
+            emptyEl.classList.add('hidden');
+            listEl.innerHTML = logs.map(log => `
+                <div class="log-box">
+                    <div onclick="toggleLogDetails(${log.id})" class="log-summary">
+                        <div>
+                            <div class="log-amount ${log.mode === 'CASH' ? 'cash' : 'online'}">₹${Number(log.amount).toFixed(2)}</div>
+                            <div class="log-meta">${log.mode} • <span>Tap for breakdown 🔍</span></div>
+                        </div>
+                        <div class="log-time-block">
+                            <div class="log-date">${log.date}</div>
+                            <div class="log-time">${log.time}</div>
+                        </div>
+                    </div>
+                    
+                    <div id="details-${log.id}" class="log-drawer hidden">
+                        <div>
+                            <span class="drawer-label">Breakdown Formula</span>
+                            <div class="formula-card">🧮 ${log.formula || log.amount}</div>
+                        </div>
+                        
+                        <div class="actions-row">
+                            <button onclick="event.stopPropagation(); editLog(${log.id})" class="action-btn edit">✏️ Edit</button>
+                            <button onclick="event.stopPropagation(); deleteLog(${log.id})" class="action-btn delete">❌ Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchTab(tab) {
+            const calcTab = document.getElementById('calcTab');
+            const histTab = document.getElementById('historyTab');
+            const calcView = document.getElementById('calculatorView');
+            const histView = document.getElementById('historyView');
+
+            if (tab === 'calculator') {
+                calcTab.classList.add('active');
+                histTab.classList.remove('active');
+                calcView.classList.remove('hidden');
+                histView.classList.add('hidden');
+            } else {
+                histTab.classList.add('active');
+                calcTab.classList.remove('active');
+                calcView.classList.add('hidden');
+                histView.classList.remove('hidden');
+            }
+        }
+        
+        if ('serviceWorker' in navigator) {
+            const swCode = "self.addEventListener('fetch', function(e){});";
+            const blob = new Blob([swCode], {type: 'application/javascript'});
+            navigator.serviceWorker.register(URL.createObjectURL(blob));
+        }
+    </script>
+</body>
+</html>
