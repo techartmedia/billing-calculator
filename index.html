@@ -18,69 +18,69 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-900 flex justify-center items-center min-h-screen p-0 sm:p-4 select-none antialiased">
+<body class="bg-slate-100 flex justify-center items-center min-h-screen p-0 sm:p-4 select-none antialiased text-slate-800">
 
-    <div class="bg-slate-900 w-full max-w-md h-screen sm:h-[90vh] sm:rounded-3xl overflow-hidden flex flex-col sm:border border-slate-800 shadow-2xl">
+    <div class="bg-white w-full max-w-md h-screen sm:h-[90vh] sm:rounded-3xl overflow-hidden flex flex-col sm:border border-slate-200 shadow-xl">
         
-        <div class="flex border-b border-slate-800 bg-slate-950 shrink-0">
-            <button id="calcTab" onclick="switchTab('calculator')" class="flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-indigo-500 bg-slate-900 text-white transition-all">
+        <div class="flex border-b border-slate-200 bg-slate-50 shrink-0">
+            <button id="calcTab" onclick="switchTab('calculator')" class="flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-indigo-600 bg-white text-indigo-600 transition-all">
                 🧮 Calculator
             </button>
-            <button id="historyTab" onclick="switchTab('history')" class="flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all">
-                📜 History (<span id="historyCount">0</span>)
+            <button id="historyTab" onclick="switchTab('history')" class="flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-all">
+                📜 Logs (<span id="historyCount">0</span>)
             </button>
         </div>
 
-        <div id="calculatorView" class="p-4 flex flex-col flex-1 justify-between overflow-hidden bg-slate-900">
+        <div id="calculatorView" class="p-4 flex flex-col flex-1 justify-between overflow-hidden">
             
-            <div class="bg-black p-6 rounded-2xl mb-4 shadow-2xl border border-slate-800/80 flex flex-col justify-center min-h-[110px]">
-                <div id="calcFormula" class="text-slate-500 text-sm font-mono text-right mb-1 h-5 overflow-x-auto no-scrollbar whitespace-nowrap"></div>
+            <div class="bg-slate-900 p-6 rounded-2xl mb-4 shadow-inner flex flex-col justify-center min-h-[110px]">
+                <div id="calcFormula" class="text-slate-400 text-sm font-mono text-right mb-1 h-5 overflow-x-auto no-scrollbar whitespace-nowrap"></div>
                 <div id="calcDisplay" class="text-emerald-400 text-5xl font-mono font-medium text-right overflow-x-auto no-scrollbar whitespace-nowrap">0</div>
             </div>
 
             <div class="mb-4">
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">Choose Payment Mode</label>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">Payment Method</label>
                 <div class="flex gap-3">
-                    <button id="modeCash" onclick="setPaymentMode('CASH')" class="flex-1 py-3.5 text-xs font-bold tracking-wider rounded-xl border-2 border-emerald-500 bg-emerald-950/40 text-emerald-400 shadow-md transition-all">
+                    <button id="modeCash" onclick="setPaymentMode('CASH')" class="flex-1 py-3 text-sm font-bold tracking-wider rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-600 shadow-sm transition-all">
                         💵 CASH
                     </button>
-                    <button id="modeOnline" onclick="setPaymentMode('ONLINE')" class="flex-1 py-3.5 text-xs font-bold tracking-wider rounded-xl border-2 border-transparent bg-slate-950 text-slate-500 shadow-sm transition-all">
+                    <button id="modeOnline" onclick="setPaymentMode('ONLINE')" class="flex-1 py-3 text-sm font-bold tracking-wider rounded-xl border-2 border-transparent bg-slate-100 text-slate-600 transition-all">
                         💳 ONLINE
                     </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-4 gap-2.5 mb-4 flex-1 items-stretch content-center">
-                <button onclick="press('7')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">7</button>
-                <button onclick="press('8')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">8</button>
-                <button onclick="press('9')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">9</button>
-                <button onclick="press('C')" class="bg-rose-950/50 text-rose-400 rounded-xl font-bold text-2xl active:bg-rose-900/60 shadow-sm border border-rose-900/40">C</button>
+                <button onclick="press('7')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">7</button>
+                <button onclick="press('8')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">8</button>
+                <button onclick="press('9')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">9</button>
+                <button onclick="press('/')" class="bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl font-black text-xl active:bg-orange-200 border border-orange-100">/</button>
 
-                <button onclick="press('4')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">4</button>
-                <button onclick="press('5')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">5</button>
-                <button onclick="press('6')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">6</button>
-                <button onclick="press('/')" class="bg-slate-950 text-amber-500 rounded-xl font-black text-2xl active:bg-slate-800 shadow-sm border border-slate-800">÷</button>
+                <button onclick="press('4')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">4</button>
+                <button onclick="press('5')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">5</button>
+                <button onclick="press('6')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">6</button>
+                <button onclick="press('*')" class="bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl font-black text-xl active:bg-orange-200 border border-orange-100">*</button>
 
-                <button onclick="press('1')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">1</button>
-                <button onclick="press('2')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">2</button>
-                <button onclick="press('3')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">3</button>
-                <button onclick="press('*')" class="bg-slate-950 text-amber-500 rounded-xl font-black text-2xl active:bg-slate-800 shadow-sm border border-slate-800">×</button>
+                <button onclick="press('1')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">1</button>
+                <button onclick="press('2')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">2</button>
+                <button onclick="press('3')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">3</button>
+                <button onclick="press('-')" class="bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl font-black text-xl active:bg-orange-200 border border-orange-100">-</button>
 
-                <button onclick="press('0')" class="col-span-2 bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">0</button>
-                <button onclick="press('.')" class="bg-slate-800 text-slate-100 rounded-xl font-bold text-2xl active:bg-slate-700 shadow-sm border border-slate-700/30">.</button>
-                <button onclick="press('-')" class="bg-slate-950 text-amber-500 rounded-xl font-black text-2xl active:bg-slate-800 shadow-sm border border-slate-800">-</button>
+                <button onclick="press('0')" class="col-span-2 bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">0</button>
+                <button onclick="press('.')" class="bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">.</button>
+                <button onclick="press('C')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl font-bold text-xl active:bg-rose-200 border border-rose-100">C</button>
                 
-                <button onclick="press('=')" class="col-span-3 bg-indigo-600 text-white py-4 rounded-xl font-extrabold text-3xl active:bg-indigo-500 transition-all shadow-lg border border-indigo-500/40">=</button>
-                <button onclick="press('+')" class="bg-slate-950 text-amber-500 rounded-xl font-black text-2xl active:bg-slate-800 shadow-sm border border-slate-800">+</button>
+                <button onclick="press('=')" class="col-span-3 bg-indigo-600 text-white py-3.5 rounded-xl font-bold text-2xl active:bg-indigo-700 shadow-md transition-all">=</button>
+                <button onclick="press('+')" class="bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl font-black text-xl active:bg-orange-200 border border-orange-100">+</button>
             </div>
 
-            <button onclick="saveBill()" class="w-full bg-emerald-500 text-slate-950 py-4 rounded-xl font-black text-base tracking-wider shadow-xl active:bg-emerald-400 transition-all shrink-0">
+            <button onclick="saveBill()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-base tracking-wider shadow-md active:bg-emerald-700 transition-all shrink-0">
                 💾 SAVE BILL LOG
             </button>
         </div>
 
-        <div id="historyView" class="p-4 hidden flex-1 flex-col overflow-y-auto bg-slate-950">
-            <div id="emptyState" class="text-center text-slate-500 mt-20 font-medium text-sm">No saved bills yet.</div>
+        <div id="historyView" class="p-4 hidden flex-1 flex-col overflow-y-auto bg-slate-50">
+            <div id="emptyState" class="text-center text-slate-400 mt-20 font-medium text-sm">No saved bills yet.</div>
             <div id="logList" class="space-y-3"></div>
         </div>
 
@@ -106,179 +106,10 @@
             } else if (val === '=') {
                 try {
                     if (!currentDisplay) return;
-                    formulaHistoryStr = currentDisplay.replace(/\*/g, '×').replace(/\//g, '÷');
+                    formulaHistoryStr = currentDisplay;
                     formulaEl.innerText = formulaHistoryStr + ' =';
                     
                     let result = new Function(`return ${currentDisplay}`)();
                     currentDisplay = String(Number(result).toFixed(2));
                     displayEl.innerText = currentDisplay;
                 } catch {
-                    alert('Calculation error');
-                    formulaHistoryStr = '';
-                    formulaEl.innerText = '';
-                }
-            } else {
-                if (currentDisplay && !isNaN(val) && formulaHistoryStr !== '' && currentDisplay === displayEl.innerText) {
-                    currentDisplay = '';
-                    formulaHistoryStr = '';
-                    formulaEl.innerText = '';
-                }
-                currentDisplay += val;
-                displayEl.innerText = currentDisplay.replace(/\*/g, '×').replace(/\//g, '÷');
-            }
-        }
-
-        function setPaymentMode(mode) {
-            selectedMode = mode;
-            const cashBtn = document.getElementById('modeCash');
-            const onlineBtn = document.getElementById('modeOnline');
-            
-            if (mode === 'CASH') {
-                cashBtn.className = "flex-1 py-3.5 text-xs font-bold tracking-wider rounded-xl border-2 border-emerald-500 bg-emerald-950/40 text-emerald-400 shadow-md transition-all";
-                onlineBtn.className = "flex-1 py-3.5 text-xs font-bold tracking-wider rounded-xl border-2 border-transparent bg-slate-950 text-slate-500 shadow-sm transition-all";
-            } else {
-                cashBtn.className = "flex-1 py-3.5 text-xs font-bold tracking-wider rounded-xl border-2 border-transparent bg-slate-950 text-slate-500 shadow-sm transition-all";
-                onlineBtn.className = "flex-1 py-3.5 text-xs font-bold tracking-wider rounded-xl border-2 border-indigo-500 bg-indigo-950/40 text-indigo-400 shadow-md transition-all";
-            }
-        }
-
-        function saveBill() {
-            const amount = parseFloat(currentDisplay);
-            if (isNaN(amount) || amount <= 0) {
-                alert('Please calculate a value first.');
-                return;
-            }
-
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
-            const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-            const calculationFormula = formulaHistoryStr || `${amount}`;
-            
-            const logId = Date.now();
-
-            const newLog = { id: logId, amount, formula: calculationFormula, mode: selectedMode, date: dateStr, time: timeStr };
-            logs.unshift(newLog);
-            localStorage.setItem('billing_logs', JSON.stringify(logs));
-            
-            alert(`Saved: ₹${amount.toFixed(2)} via ${selectedMode}`);
-            
-            currentDisplay = '';
-            formulaHistoryStr = '';
-            document.getElementById('calcDisplay').innerText = '0';
-            document.getElementById('calcFormula').innerText = '';
-            
-            updateHistoryUI();
-        }
-
-        // --- CLICK TO TOGGLE EXPAND BREAKDOWN ---
-        function toggleLogDetails(id) {
-            const detailsPanel = document.getElementById(`details-${id}`);
-            if (detailsPanel.classList.contains('hidden')) {
-                detailsPanel.classList.remove('hidden');
-            } else {
-                detailsPanel.classList.add('hidden');
-            }
-        }
-
-        function deleteLog(id) {
-            if (confirm('Delete this bill permanently?')) {
-                logs = logs.filter(log => log.id !== id);
-                localStorage.setItem('billing_logs', JSON.stringify(logs));
-                updateHistoryUI();
-            }
-        }
-
-        function editLog(id) {
-            const index = logs.findIndex(log => log.id === id);
-            if (index === -1) return;
-
-            const currentAmount = logs[index].amount;
-            const newAmountStr = prompt("Edit Bill Total Amount:", currentAmount.toFixed(2));
-            
-            if (newAmountStr === null) return; 
-            
-            const newAmount = parseFloat(newAmountStr);
-            if (isNaN(newAmount) || newAmount <= 0) {
-                alert("Please type a valid number total.");
-                return;
-            }
-
-            logs[index].amount = newAmount;
-            logs[index].formula = `${newAmount.toFixed(2)} (Edited)`;
-            
-            localStorage.setItem('billing_logs', JSON.stringify(logs));
-            updateHistoryUI();
-        }
-
-        function updateHistoryUI() {
-            document.getElementById('historyCount').innerText = logs.length;
-            const listEl = document.getElementById('logList');
-            const emptyEl = document.getElementById('emptyState');
-            
-            if (logs.length === 0) {
-                emptyEl.classList.remove('hidden');
-                listEl.innerHTML = '';
-                return;
-            }
-            
-            emptyEl.classList.add('hidden');
-            listEl.innerHTML = logs.map(log => `
-                <div class="bg-slate-900 border border-slate-800/60 rounded-xl overflow-hidden shadow-md cursor-pointer">
-                    <div onclick="toggleLogDetails(${log.id})" class="p-4 flex justify-between items-center hover:bg-slate-800/30 active:bg-slate-800/60 transition-colors">
-                        <div>
-                            <div class="text-2xl font-mono font-bold ${log.mode === 'CASH' ? 'text-emerald-400' : 'text-indigo-400'}">₹${Number(log.amount).toFixed(2)}</div>
-                            <div class="text-[10px] text-slate-500 font-bold tracking-wider mt-1 uppercase">${log.mode} • <span class="text-indigo-400 font-normal">Click to open breakdown 🔍</span></div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-xs font-bold text-slate-300 font-mono">${log.date}</div>
-                            <div class="text-[11px] text-slate-500 font-mono mt-0.5">${log.time}</div>
-                        </div>
-                    </div>
-                    
-                    <div id="details-${log.id}" class="hidden p-4 bg-slate-950/60 border-t border-slate-800/60">
-                        <div class="mb-3">
-                            <span class="text-[11px] font-bold uppercase text-slate-500 block mb-1">Calculation Breakdown:</span>
-                            <div class="text-sm text-slate-300 font-mono bg-black/40 px-3 py-2 rounded border border-slate-800/50 inline-block w-full">🧮 ${log.formula || log.amount}</div>
-                        </div>
-                        
-                        <div class="flex gap-2 pt-1">
-                            <button onclick="event.stopPropagation(); editLog(${log.id})" class="flex-1 py-2 text-xs font-bold text-amber-400 bg-amber-950/20 rounded-md border border-amber-900/40 active:bg-amber-900/40 transition-colors">
-                                ✏️ Edit Bill
-                            </button>
-                            <button onclick="event.stopPropagation(); deleteLog(${log.id})" class="flex-1 py-2 text-xs font-bold text-rose-400 bg-rose-950/20 rounded-md border border-rose-900/40 active:bg-rose-900/40 transition-colors">
-                                ❌ Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function switchTab(tab) {
-            const calcTab = document.getElementById('calcTab');
-            const histTab = document.getElementById('historyTab');
-            const calcView = document.getElementById('calculatorView');
-            const histView = document.getElementById('historyView');
-
-            if (tab === 'calculator') {
-                calcTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-indigo-500 bg-slate-900 text-white transition-all";
-                histTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all";
-                calcView.classList.remove('hidden');
-                histView.classList.add('hidden');
-            } else {
-                histTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-indigo-500 bg-slate-900 text-white transition-all";
-                calcTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all";
-                calcView.classList.add('hidden');
-                histView.classList.remove('hidden');
-                histView.classList.add('flex');
-            }
-        }
-        
-        if ('serviceWorker' in navigator) {
-            const swCode = "self.addEventListener('fetch', function(e){});";
-            const blob = new Blob([swCode], {type: 'application/javascript'});
-            navigator.serviceWorker.register(URL.createObjectURL(blob));
-        }
-    </script>
-</body>
-</html>
