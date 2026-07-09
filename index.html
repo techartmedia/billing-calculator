@@ -4,454 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>POS Billing Calculator</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-transitional">
-    
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, Helvetica, sans-serif; margin: 0; padding: 0; }
-        html, body { height: 100%; width: 100%; overflow: hidden; background-color: #000000; color: #ffffff; user-select: none; -webkit-user-select: none; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; margin: 0; padding: 0; }
+        html, body { height: 100%; width: 100%; overflow: hidden; background-color: #000000; color: #ffffff; }
+        .app-shell { display: flex; flex-direction: column; height: 100%; padding: 10px 16px; }
         
-        .app-shell { display: flex; flex-direction: column; height: 100%; width: 100%; justify-content: space-between; padding: 10px 16px 14px 16px; }
-        .hidden { display: none !important; }
-
-        /* Top System Navbar Toggle Tabs */
-        .nav-header { display: flex; background-color: #1c1c1e; border-radius: 12px; padding: 3px; margin-bottom: 4px; flex-shrink: 0; }
-        .nav-btn { flex: 1; padding: 8px 0; font-size: 13px; font-weight: 600; text-align: center; border: none; background: transparent; color: #8e8e93; border-radius: 9px; cursor: pointer; transition: all 0.2s ease; }
-        .nav-btn.active { background-color: #2c2c2e; color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        /* Full Screen Dynamic Layout Viewports */
-        .workspace-view { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
-
-        /* Enhanced Monitor Display Panel to handle Infinite/Lengthy formulas */
-        .monitor-panel { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 4px 6px; min-height: 120px; flex-grow: 1; width: 100%; margin-bottom: 2px; overflow: hidden; }
-        .history-expression { color: #8e8e93; font-size: 16px; font-weight: 400; text-align: right; width: 100%; word-break: break-all; max-height: 50px; overflow-y: auto; margin-bottom: 2px; line-height: 1.2; display: -webkit-box; -webkit-box-orient: vertical; }
+        /* Editable Input Field */
+        .main-total-input { 
+            width: 100%; background: transparent; border: none; color: #ffffff; 
+            font-size: 48px; font-weight: 300; text-align: right; 
+            outline: none; margin: 20px 0; caret-color: #ff9f0a; 
+        }
         
-        /* Main output configured to support horizontal auto-scroll when values exceed viewport bounds */
-        .main-total-output { color: #ffffff; font-size: 48px; font-weight: 300; text-align: right; width: 100%; overflow-x: auto; white-space: nowrap; line-height: 1.1; scroll-behavior: smooth; }
-        .history-expression::-webkit-scrollbar, .main-total-output::-webkit-scrollbar { display: none; }
-
-        /* Native iOS Segmented Method Picker - STREAMLINED MICRO SIZE */
-        .payment-label { font-size: 9px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; padding-left: 2px; }
-        .payment-toggle-group { display: flex; background-color: #1c1c1e; border-radius: 8px; padding: 2px; margin-bottom: 8px; flex-shrink: 0; }
-        .method-option { flex: 1; padding: 6px 0; font-size: 11px; font-weight: 700; text-align: center; border: none; background: transparent; color: #aeaeae; border-radius: 6px; cursor: pointer; }
-        .method-option.selected-cash { background-color: #34c759; color: #ffffff; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 199, 89, 0.3); }
-        .method-option.selected-online { background-color: #5856d6; color: #ffffff; font-weight: 700; box-shadow: 0 2px 4px rgba(88, 86, 214, 0.3); }
-
-        /* Compact Keypad Container - OPTIMIZED GAP */
-        .phone-keypad { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; padding: 0 2px; flex-shrink: 0; }
-        .keypad-row { display: flex; gap: 10px; justify-content: space-between; width: 100%; }
+        .history-expression { color: #8e8e93; font-size: 16px; text-align: right; height: 20px; }
         
-        /* Reduced Size Circular Buttons - COMPACT GRID SCALE */
-        .btn-cell { width: 54px; height: 54px; border-radius: 50%; border: none; font-size: 21px; font-weight: 400; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; background-color: #333333; transition: opacity 0.1s; touch-action: manipulation; }
-        .btn-cell:active { opacity: 0.6; }
-        
-        /* Layout Style Overrides */
-        .btn-cell.wide-capsule { width: 118px; border-radius: 35px; padding-left: 20px; justify-content: flex-start; }
-        .btn-cell.utility { background-color: #a5a5a5; color: #000000; font-weight: 500; font-size: 19px; }
-        .btn-cell.operator { background-color: #ff9f0a; color: #ffffff; font-size: 24px; }
+        .payment-toggle-group { display: flex; background-color: #1c1c1e; border-radius: 8px; padding: 2px; margin-bottom: 10px; }
+        .method-option { flex: 1; padding: 8px; font-size: 12px; font-weight: 700; border: none; background: transparent; color: #aeaeae; border-radius: 6px; cursor: pointer; }
+        .method-option.selected-cash { background-color: #34c759; color: #ffffff; }
+        .method-option.selected-online { background-color: #5856d6; color: #ffffff; }
 
-        /* Bottom Action Footer Button - STREAMLINED MICRO SIZE */
-        .commit-log-action { width: 100%; background-color: #24b64b; color: #ffffff; border: none; padding: 10px; font-size: 13px; font-weight: 700; border-radius: 10px; cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 3px 6px rgba(36, 182, 75, 0.2); flex-shrink: 0; }
-        .commit-log-action:active { opacity: 0.8; }
+        .phone-keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
+        .btn-cell { height: 50px; border-radius: 25px; border: none; font-size: 20px; background-color: #333333; color: white; }
+        .btn-cell.operator { background-color: #ff9f0a; }
+        .btn-cell.utility { background-color: #a5a5a5; color: black; }
 
-        /* Database History Management Layout View */
-        .history-ledger-container { flex: 1; overflow-y: auto; background-color: #000000; width: 100%; padding-top: 4px; }
-        .empty-placeholder { text-align: center; color: #8e8e93; font-size: 14px; margin-top: 80px; }
+        .commit-log-action { width: 100%; padding: 12px; border-radius: 10px; border: none; background-color: #24b64b; color: white; font-weight: bold; }
         
-        /* Log Entries List Design */
-        .ledger-card { background-color: #1c1c1e; border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
-        .ledger-summary-row { padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .ledger-summary-row:active { background-color: #2c2c2e; }
-        .record-value { font-size: 19px; font-weight: 600; font-family: monospace; }
-        .record-value.cash-label { color: #30d158; }
-        .record-value.online-label { color: #5e5ce6; }
-        .record-metadata { font-size: 10px; font-weight: 600; color: #8e8e93; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.3px; }
-        .record-metadata span { color: #5e5ce6; font-weight: normal; text-transform: none; }
-        .record-timestamp { text-align: right; }
-        .record-date-str { font-size: 12px; font-weight: 600; color: #ffffff; }
-        .record-time-str { font-size: 10px; color: #8e8e93; margin-top: 2px; }
-
-        /* Expandable Accordion Menu */
-        .ledger-drawer { padding: 14px; background-color: #121214; border-top: 1px solid #2c2c2e; }
-        .breakdown-display { font-size: 13px; color: #e5e5ea; font-family: monospace; background-color: #1c1c1e; padding: 10px; border-radius: 8px; border: 1px solid #2c2c2e; margin-top: 4px; overflow-x: auto; }
-        .drawer-subheading { font-size: 10px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .control-panel-row { display: flex; gap: 8px; margin-top: 12px; }
-        .panel-action-btn { flex: 1; border: none; padding: 8px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; text-align: center; }
-        .panel-action-btn.edit-trigger { color: #ff9f0a; background-color: rgba(255, 159, 10, 0.15); }
-        .panel-action-btn.edit-trigger:active { background-color: rgba(255, 159, 10, 0.3); }
-        .panel-action-btn.delete-trigger { color: #ff453a; background-color: rgba(255, 69, 58, 0.15); }
-        .panel-action-btn.delete-trigger:active { background-color: rgba(255, 69, 58, 0.3); }
+        .history-ledger-container { flex: 1; overflow-y: auto; margin-top: 10px; }
+        .ledger-card { background-color: #1c1c1e; padding: 12px; border-radius: 12px; margin-bottom: 8px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="app-shell">
-        <div class="nav-header">
-            <button id="calcTab" onclick="renderView('calculator')" class="nav-btn active">🔢 Calculator</button>
-            <button id="historyTab" onclick="renderView('history')" class="nav-btn">📜 Logs (<span id="countDisplay">0</span>)</button>
+<div class="app-shell">
+    <div id="calculatorView">
+        <div id="calcFormula" class="history-expression"></div>
+        <input type="text" id="calcDisplay" class="main-total-input" value="0" inputmode="decimal">
+
+        <div class="payment-toggle-group">
+            <button id="modeCash" class="method-option selected-cash" onclick="updateMode('CASH')">CASH</button>
+            <button id="modeOnline" class="method-option" onclick="updateMode('ONLINE')">ONLINE</button>
         </div>
 
-        <div id="calculatorView" class="workspace-view">
-            <div class="monitor-panel">
-                <div id="calcFormula" class="history-expression"></div>
-                <div id="calcDisplay" class="main-total-output">0</div>
-            </div>
-
-            <div>
-                <div class="payment-label">Payment Mode Selection</div>
-                <div class="payment-toggle-group">
-                    <button id="modeCash" onclick="updatePaymentSelection('CASH')" class="method-option selected-cash">💵 CASH</button>
-                    <button id="modeOnline" onclick="updatePaymentSelection('ONLINE')" class="method-option">💳 ONLINE</button>
-                </div>
-            </div>
-
-            <div class="phone-keypad">
-                <div class="keypad-row">
-                    <button onclick="inputKey('C')" class="btn-cell utility">C</button>
-                    <button onclick="inputKey('BACKSPACE')" class="btn-cell utility">⌫</button>
-                    <button onclick="inputKey('%')" class="btn-cell utility">%</button>
-                    <button onclick="inputKey('/')" class="btn-cell operator">÷</button>
-                </div>
-                <div class="keypad-row">
-                    <button onclick="inputKey('7')" class="btn-cell">7</button>
-                    <button onclick="inputKey('8')" class="btn-cell">8</button>
-                    <button onclick="inputKey('9')" class="btn-cell">9</button>
-                    <button onclick="inputKey('*')" class="btn-cell operator">×</button>
-                </div>
-                <div class="keypad-row">
-                    <button onclick="inputKey('4')" class="btn-cell">4</button>
-                    <button onclick="inputKey('5')" class="btn-cell">5</button>
-                    <button onclick="inputKey('6')" class="btn-cell">6</button>
-                    <button onclick="inputKey('-')" class="btn-cell operator">−</button>
-                </div>
-                <div class="keypad-row">
-                    <button onclick="inputKey('1')" class="btn-cell">1</button>
-                    <button onclick="inputKey('2')" class="btn-cell">2</button>
-                    <button onclick="inputKey('3')" class="btn-cell">3</button>
-                    <button onclick="inputKey('+')" class="btn-cell operator">+</button>
-                </div>
-                <div class="keypad-row">
-                    <button onclick="inputKey('0')" class="btn-cell wide-capsule">0</button>
-                    <button onclick="inputKey('.')" class="btn-cell">.</button>
-                    <button onclick="inputKey('=')" class="btn-cell operator">=</button>
-                </div>
-            </div>
-
-            <button onclick="commitEntryToDatabase()" class="commit-log-action">📥 SAVE TRANSACTION LOG</button>
+        <div class="phone-keypad">
+            <button class="btn-cell utility" onclick="key('C')">C</button>
+            <button class="btn-cell utility" onclick="key('BACKSPACE')">⌫</button>
+            <button class="btn-cell utility" onclick="key('%')">%</button>
+            <button class="btn-cell operator" onclick="key('/')">÷</button>
+            <button class="btn-cell" onclick="key('7')">7</button>
+            <button class="btn-cell" onclick="key('8')">8</button>
+            <button class="btn-cell" onclick="key('9')">9</button>
+            <button class="btn-cell operator" onclick="key('*')">×</button>
+            <button class="btn-cell" onclick="key('4')">4</button>
+            <button class="btn-cell" onclick="key('5')">5</button>
+            <button class="btn-cell" onclick="key('6')">6</button>
+            <button class="btn-cell operator" onclick="key('-')">−</button>
+            <button class="btn-cell" onclick="key('1')">1</button>
+            <button class="btn-cell" onclick="key('2')">2</button>
+            <button class="btn-cell" onclick="key('3')">3</button>
+            <button class="btn-cell operator" onclick="key('+')">+</button>
+            <button class="btn-cell" style="grid-column: span 2;" onclick="key('0')">0</button>
+            <button class="btn-cell" onclick="key('.')">.</button>
+            <button class="btn-cell operator" onclick="key('=')">=</button>
         </div>
-
-        <div id="historyView" class="history-ledger-container hidden">
-            <div id="emptyState" class="empty-placeholder">No transaction logs captured today.</div>
-            <div id="logList"></div>
-        </div>
+        <button class="commit-log-action" onclick="saveLog()">SAVE TRANSACTION</button>
     </div>
 
-    <script>
-        let currentOperandSegment = '0';
-        let rollingMathFormulaSequence = [];
-        let isResultDisplayState = false;
-        
-        let activePaymentMode = 'CASH';
-        let transactionLogsDatabase = JSON.parse(localStorage.getItem('billing_logs')) || [];
+    <div id="historyView" class="history-ledger-container hidden">
+        <div id="logList"></div>
+    </div>
+</div>
 
-        refreshLedgerViewUI();
+<script>
+    let mode = 'CASH';
+    const display = document.getElementById('calcDisplay');
 
-        function inputKey(keyValue) {
-            const displayOutputElement = document.getElementById('calcDisplay');
-            const calculationFormulaElement = document.getElementById('calcFormula');
+    function key(val) {
+        if (val === 'C') display.value = '0';
+        else if (val === 'BACKSPACE') display.value = display.value.slice(0, -1) || '0';
+        else if (val === '=') display.value = eval(display.value.replace(/×/g, '*').replace(/÷/g, '/'));
+        else display.value = (display.value === '0') ? val : display.value + val;
+    }
 
-            if (keyValue === 'C') {
-                currentOperandSegment = '0';
-                rollingMathFormulaSequence = [];
-                isResultDisplayState = false;
-                displayOutputElement.innerText = '0';
-                calculationFormulaElement.innerText = '';
-                return;
-            }
+    function updateMode(m) {
+        mode = m;
+        document.getElementById('modeCash').className = m === 'CASH' ? 'method-option selected-cash' : 'method-option';
+        document.getElementById('modeOnline').className = m === 'ONLINE' ? 'method-option selected-online' : 'method-option';
+    }
 
-            if (keyValue === 'BACKSPACE') {
-                if (isResultDisplayState) {
-                    calculationFormulaElement.innerText = '';
-                    return;
-                }
-                if (currentOperandSegment.length > 0 && currentOperandSegment !== '0') {
-                    currentOperandSegment = currentOperandSegment.slice(0, -1);
-                    if (currentOperandSegment === '' || currentOperandSegment === '-') {
-                        currentOperandSegment = '0';
-                    }
-                    displayOutputElement.innerText = currentOperandSegment;
-                    autoScrollDisplayToRight();
-                }
-                return;
-            }
+    function saveLog() {
+        let logs = JSON.parse(localStorage.getItem('logs') || '[]');
+        logs.unshift({ id: Date.now(), val: display.value, mode, date: new Date().toLocaleString() });
+        localStorage.setItem('logs', JSON.stringify(logs));
+        render();
+    }
 
-            if (keyValue === '%') {
-                if (currentOperandSegment === '0' || currentOperandSegment === '') return;
-                currentOperandSegment = String(parseFloat(currentOperandSegment) / 100);
-                displayOutputElement.innerText = currentOperandSegment;
-                autoScrollDisplayToRight();
-                return;
-            }
+    function render() {
+        let logs = JSON.parse(localStorage.getItem('logs') || '[]');
+        document.getElementById('logList').innerHTML = logs.map(l => `
+            <div class="ledger-card">
+                <div>${l.val} - ${l.mode}</div>
+                <div style="font-size:10px">${l.date}</div>
+            </div>`).join('');
+    }
 
-            if (['+', '-', '*', '/'].includes(keyValue)) {
-                if (isResultDisplayState) {
-                    rollingMathFormulaSequence = [currentOperandSegment, keyValue];
-                    isResultDisplayState = false;
-                } else {
-                    if (currentOperandSegment !== '') {
-                        rollingMathFormulaSequence.push(currentOperandSegment);
-                    }
-                    if (['+', '-', '*', '/'].includes(rollingMathFormulaSequence[rollingMathFormulaSequence.length - 1]) && currentOperandSegment === '') {
-                        rollingMathFormulaSequence[rollingMathFormulaSequence.length - 1] = keyValue; 
-                    } else {
-                        if (rollingMathFormulaSequence.length > 0) {
-                            let liveCalculatedIntermediary = evaluateFormulaArray(rollingMathFormulaSequence);
-                            displayOutputElement.innerText = String(liveCalculatedIntermediary);
-                        }
-                    }
-                }
-                
-                if (rollingMathFormulaSequence[rollingMathFormulaSequence.length - 1] !== keyValue) {
-                    rollingMathFormulaSequence.push(keyValue);
-                }
-                
-                currentOperandSegment = '';
-                calculationFormulaElement.innerText = formatFormulaOutput(rollingMathFormulaSequence);
-                autoScrollFormulaToBottom();
-                autoScrollDisplayToRight();
-                return;
-            }
-
-            if (keyValue === '=') {
-                if (currentOperandSegment !== '') {
-                    rollingMathFormulaSequence.push(currentOperandSegment);
-                }
-                if (rollingMathFormulaSequence.length === 0) return;
-                if (['+', '-', '*', '/'].includes(rollingMathFormulaSequence[rollingMathFormulaSequence.length - 1])) {
-                    rollingMathFormulaSequence.pop();
-                }
-
-                calculationFormulaElement.innerText = formatFormulaOutput(rollingMathFormulaSequence) + ' =';
-                
-                let evaluationResult = evaluateFormulaArray(rollingMathFormulaSequence);
-                currentOperandSegment = String(evaluationResult);
-                displayOutputElement.innerText = currentOperandSegment;
-                
-                rollingMathFormulaSequence = [];
-                isResultDisplayState = true;
-                autoScrollFormulaToBottom();
-                autoScrollDisplayToRight();
-                return;
-            }
-
-            if (isResultDisplayState) {
-                currentOperandSegment = '';
-                isResultDisplayState = false;
-            }
-
-            if (keyValue === '.') {
-                if (currentOperandSegment.includes('.')) return; 
-                if (currentOperandSegment === '') currentOperandSegment = '0';
-            }
-
-            if (currentOperandSegment === '0' && keyValue !== '.') {
-                currentOperandSegment = keyValue;
-            } else {
-                currentOperandSegment += keyValue;
-            }
-            displayOutputElement.innerText = currentOperandSegment;
-            autoScrollDisplayToRight();
-        }
-
-        function formatFormulaOutput(arr) {
-            return arr.join(' ').replace(/\*/g, '×').replace(/\//g, '÷');
-        }
-
-        function autoScrollFormulaToBottom() {
-            const calculationFormulaElement = document.getElementById('calcFormula');
-            calculationFormulaElement.scrollTop = calculationFormulaElement.scrollHeight;
-        }
-
-        function autoScrollDisplayToRight() {
-            const displayOutputElement = document.getElementById('calcDisplay');
-            setTimeout(() => {
-                displayOutputElement.scrollLeft = displayOutputElement.scrollWidth;
-            }, 10);
-        }
-
-        function evaluateFormulaArray(inputTokens) {
-            let tokens = [...inputTokens];
-            if (tokens.length === 0) return 0;
-
-            for (let i = 0; i < tokens.length; i++) {
-                if (tokens[i] === '*' || tokens[i] === '/') {
-                    let left = parseFloat(tokens[i - 1]);
-                    let right = parseFloat(tokens[i + 1]);
-                    let res = tokens[i] === '*' ? left * right : left / right;
-                    tokens.splice(i - 1, 3, res);
-                    i--;
-                }
-            }
-
-            let finalSum = parseFloat(tokens[0]) || 0;
-            for (let i = 1; i < tokens.length; i += 2) {
-                let op = tokens[i];
-                let nextVal = parseFloat(tokens[i + 1]);
-                if (op === '+') finalSum += nextVal;
-                if (op === '-') finalSum -= nextVal;
-            }
-
-            return parseFloat(finalSum.toFixed(4));
-        }
-
-        function updatePaymentSelection(targetSelectionMode) {
-            activePaymentMode = targetSelectionMode;
-            const cashBtn = document.getElementById('modeCash');
-            const onlineBtn = document.getElementById('modeOnline');
-            
-            if (targetSelectionMode === 'CASH') {
-                cashBtn.className = "method-option selected-cash";
-                onlineBtn.className = "method-option";
-            } else {
-                cashBtn.className = "method-option";
-                onlineBtn.className = "method-option selected-online";
-            }
-        }
-
-        function commitEntryToDatabase() {
-            const evaluationAmount = parseFloat(currentOperandSegment);
-            const activeFormulaLabel = document.getElementById('calcFormula').innerText || `${evaluationAmount}`;
-            
-            if (isNaN(evaluationAmount) || evaluationAmount <= 0) {
-                alert('Perform calculations or input a sum before logging.');
-                return;
-            }
-
-            const activeDateInstance = new Date();
-            const customizedDateString = activeDateInstance.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
-            const customizedTimeString = activeDateInstance.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-            const uniqueDatabaseRowId = Date.now();
-
-            const newlyCreatedLogObject = { 
-                id: uniqueDatabaseRowId, 
-                amount: evaluationAmount, 
-                formula: activeFormulaLabel, 
-                mode: activePaymentMode, 
-                date: customizedDateString, 
-                time: customizedTimeString 
-            };
-            
-            transactionLogsDatabase.unshift(newlyCreatedLogObject);
-            localStorage.setItem('billing_logs', JSON.stringify(transactionLogsDatabase));
-            
-            alert(`Record logged successfully: ₹${evaluationAmount.toFixed(2)} [${activePaymentMode}]`);
-            
-            currentOperandSegment = '0';
-            rollingMathFormulaSequence = [];
-            isResultDisplayState = false;
-            document.getElementById('calcDisplay').innerText = '0';
-            document.getElementById('calcFormula').innerText = '';
-            
-            refreshLedgerViewUI();
-        }
-
-        function toggleRowAccordionDrawer(targetRecordId) {
-            const selectedDrawerElement = document.getElementById(`details-${targetRecordId}`);
-            if(selectedDrawerElement) {
-                selectedDrawerElement.classList.toggle('hidden');
-            }
-        }
-
-        function clearLogItemEntry(targetRecordId) {
-            if (confirm('Permanently delete this invoice log entry from mobile database memory?')) {
-                transactionLogsDatabase = transactionLogsDatabase.filter(itemRecord => itemRecord.id !== targetRecordId);
-                localStorage.setItem('billing_logs', JSON.stringify(transactionLogsDatabase));
-                refreshLedgerViewUI();
-            }
-        }
-
-        function modifyLogItemEntry(targetRecordId) {
-            const targetingItemIndex = transactionLogsDatabase.findIndex(itemRecord => itemRecord.id === targetRecordId);
-            if (targetingItemIndex === -1) return;
-
-            const trackingHistoricalAmount = transactionLogsDatabase[targetingItemIndex].amount;
-            const configurationAmountPromptResponse = prompt("Alter recorded billing base total:", trackingHistoricalAmount.toFixed(2));
-            
-            if (configurationAmountPromptResponse === null) return; 
-            
-            const sanitizedParsedResponseAmount = parseFloat(configurationAmountPromptResponse);
-            if (isNaN(sanitizedParsedResponseAmount) || sanitizedParsedResponseAmount <= 0) {
-                alert("Input a valid numeric invoice valuation.");
-                return;
-            }
-
-            transactionLogsDatabase[targetingItemIndex].amount = sanitizedParsedResponseAmount;
-            transactionLogsDatabase[targetingItemIndex].formula = `${sanitizedParsedResponseAmount.toFixed(2)} (Manually Edited)`;
-            
-            localStorage.setItem('billing_logs', JSON.stringify(transactionLogsDatabase));
-            refreshLedgerViewUI();
-        }
-
-        function refreshLedgerViewUI() {
-            document.getElementById('countDisplay').innerText = transactionLogsDatabase.length;
-            const listOutputWrapperElement = document.getElementById('logList');
-            const cleanDatabaseEmptyNoticeState = document.getElementById('emptyState');
-            
-            if (transactionLogsDatabase.length === 0) {
-                cleanDatabaseEmptyNoticeState.classList.remove('hidden');
-                listOutputWrapperElement.innerHTML = '';
-                return;
-            }
-            
-            cleanDatabaseEmptyNoticeState.classList.add('hidden');
-            listOutputWrapperElement.innerHTML = transactionLogsDatabase.map(itemRow => `
-                <div class="ledger-card">
-                    <div onclick="toggleRowAccordionDrawer(${itemRow.id})" class="ledger-summary-row">
-                        <div>
-                            <div class="record-value ${itemRow.mode === 'CASH' ? 'cash-label' : 'online-label'}">₹${Number(itemRow.amount).toFixed(2)}</div>
-                            <div class="record-metadata">${itemRow.mode} • <span>Tap for options ⚙️</span></div>
-                        </div>
-                        <div class="record-timestamp">
-                            <div class="record-date-str">${itemRow.date}</div>
-                            <div class="record-time-str">${itemRow.time}</div>
-                        </div>
-                    </div>
-                    
-                    <div id="details-${itemRow.id}" class="ledger-drawer hidden">
-                        <div>
-                            <span class="drawer-subheading">Mathematical Composition Trace</span>
-                            <div class="breakdown-display">🧮 ${itemRow.formula || itemRow.amount}</div>
-                        </div>
-                        
-                        <div class="control-panel-row">
-                            <button onclick="event.stopPropagation(); modifyLogItemEntry(${itemRow.id})" class="panel-action-btn edit-trigger">✏️ Edit Log</button>
-                            <button onclick="event.stopPropagation(); clearLogItemEntry(${itemRow.id})" class="panel-action-btn delete-trigger">🗑️ Delete</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderView(viewTargetTokenId) {
-            const primaryCalcTabElement = document.getElementById('calcTab');
-            const primaryLogsTabElement = document.getElementById('historyTab');
-            const applicationCalculatorViewport = document.getElementById('calculatorView');
-            const applicationDatabaseLedgerViewport = document.getElementById('historyView');
-
-            if (viewTargetTokenId === 'calculator') {
-                primaryCalcTabElement.classList.add('active');
-                primaryLogsTabElement.classList.remove('active');
-                applicationCalculatorViewport.classList.remove('hidden');
-                applicationDatabaseLedgerViewport.classList.add('hidden');
-            } else {
-                primaryLogsTabElement.classList.add('active');
-                primaryCalcTabElement.classList.remove('active');
-                applicationCalculatorViewport.classList.add('hidden');
-                applicationDatabaseLedgerViewport.classList.remove('hidden');
-            }
-        }
-    </script>
+    // Toggle view
+    function toggle() {
+        document.getElementById('calculatorView').classList.toggle('hidden');
+        document.getElementById('historyView').classList.toggle('hidden');
+    }
+    
+    render();
+</script>
 </body>
 </html>
