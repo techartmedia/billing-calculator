@@ -12,7 +12,7 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, Helvetica, sans-serif; margin: 0; padding: 0; }
         html, body { height: 100%; width: 100%; overflow: hidden; background-color: #000000; color: #ffffff; user-select: none; -webkit-user-select: none; }
         
-        .app-shell { display: flex; flex-direction: column; height: 100%; width: 100%; justify-content: space-between; padding: 16px 16px 24px 16px; }
+        .app-shell { display: flex; flex-direction: column; height: 100%; width: 100%; justify-content: space-between; padding: 16px 20px 24px 20px; }
         .hidden { display: none !important; }
 
         /* Top System Navbar Toggle Tabs */
@@ -24,7 +24,7 @@
         .workspace-view { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
 
         /* Fixed Monitor Display Panel to Prevent Clipping */
-        .monitor-panel { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 12px 8px; min-height: 120px; max-height: 140px; width: 100%; overflow: hidden; margin-bottom: 4px; }
+        .monitor-panel { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 12px 8px; min-height: 110px; max-height: 130px; width: 100%; overflow: hidden; margin-bottom: 4px; }
         .history-expression { color: #8e8e93; font-size: 22px; font-weight: 400; min-height: 26px; text-align: right; width: 100%; overflow-x: auto; white-space: nowrap; margin-bottom: 6px; }
         .main-total-output { color: #ffffff; font-size: 56px; font-weight: 300; text-align: right; width: 100%; overflow-x: auto; white-space: nowrap; line-height: 1.1; }
         .history-expression::-webkit-scrollbar, .main-total-output::-webkit-scrollbar { display: none; }
@@ -36,16 +36,18 @@
         .method-option.selected-cash { background-color: #34c759; color: #ffffff; font-weight: 700; box-shadow: 0 2px 6px rgba(52, 199, 89, 0.3); }
         .method-option.selected-online { background-color: #5856d6; color: #ffffff; font-weight: 700; box-shadow: 0 2px 6px rgba(88, 86, 214, 0.3); }
 
-        /* Standard Phone Native Circular Keypad Interface */
-        .phone-keypad { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; flex-shrink: 0; }
-        .keypad-row { display: flex; gap: 12px; justify-content: space-between; width: 100%; }
-        .btn-cell { flex: 1; aspect-ratio: 1; border-radius: 50%; border: none; font-size: 28px; font-weight: 400; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; background-color: #333333; transition: opacity 0.1s; touch-action: manipulation; }
+        /* Compact Keypad Container */
+        .phone-keypad { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; padding: 0 4px; flex-shrink: 0; }
+        .keypad-row { display: flex; gap: 14px; justify-content: space-between; width: 100%; }
+        
+        /* Reduced Size Circular Buttons */
+        .btn-cell { width: 62px; height: 62px; border-radius: 50%; border: none; font-size: 24px; font-weight: 400; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; background-color: #333333; transition: opacity 0.1s; touch-action: manipulation; }
         .btn-cell:active { opacity: 0.6; }
         
         /* Layout Style Overrides */
-        .btn-cell.wide-capsule { flex: 2; aspect-ratio: auto; border-radius: 40px; padding-left: 28px; justify-content: flex-start; }
-        .btn-cell.utility { background-color: #a5a5a5; color: #000000; font-weight: 500; }
-        .btn-cell.operator { background-color: #ff9f0a; color: #ffffff; font-size: 32px; }
+        .btn-cell.wide-capsule { width: 138px; border-radius: 40px; padding-left: 24px; justify-content: flex-start; }
+        .btn-cell.utility { background-color: #a5a5a5; color: #000000; font-weight: 500; font-size: 22px; }
+        .btn-cell.operator { background-color: #ff9f0a; color: #ffffff; font-size: 28px; }
 
         /* Bottom Action Footer Button */
         .commit-log-action { width: 100%; background-color: #24b64b; color: #ffffff; border: none; padding: 16px; font-size: 16px; font-weight: 700; border-radius: 16px; cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 4px 12px rgba(36, 182, 75, 0.2); flex-shrink: 0; }
@@ -74,300 +76,4 @@
         .drawer-subheading { font-size: 11px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .control-panel-row { display: flex; gap: 10px; margin-top: 14px; }
-        .panel-action-btn { flex: 1; border: none; padding: 10px; font-size: 13px; font-weight: 600; border-radius: 10px; cursor: pointer; text-align: center; }
-        .panel-action-btn.edit-trigger { color: #ff9f0a; background-color: rgba(255, 159, 10, 0.15); }
-        .panel-action-btn.edit-trigger:active { background-color: rgba(255, 159, 10, 0.3); }
-        .panel-action-btn.delete-trigger { color: #ff453a; background-color: rgba(255, 69, 58, 0.15); }
-        .panel-action-btn.delete-trigger:active { background-color: rgba(255, 69, 58, 0.3); }
-    </style>
-</head>
-<body>
-
-    <div class="app-shell">
-        <div class="nav-header">
-            <button id="calcTab" onclick="renderView('calculator')" class="nav-btn active">🔢 Calculator</button>
-            <button id="historyTab" onclick="renderView('history')" class="nav-btn">📜 Logs (<span id="countDisplay">0</span>)</button>
-        </div>
-
-        <div id="calculatorView" class="workspace-view">
-            <div class="monitor-panel">
-                <div id="calcFormula" class="history-expression"></div>
-                <div id="calcDisplay" class="main-total-output">0</div>
-            </div>
-
-            <div>
-                <div class="payment-label">Payment Mode Selection</div>
-                <div class="payment-toggle-group">
-                    <button id="modeCash" onclick="updatePaymentSelection('CASH')" class="method-option selected-cash">💵 CASH</button>
-                    <button id="modeOnline" onclick="updatePaymentSelection('ONLINE')" class="method-option">💳 ONLINE</button>
-                </div>
-            </div>
-
-            <div class="phone-keypad">
-                <div class="keypad-row">
-                    <button onclick="inputKey('C')" class="btn-cell utility">C</button>
-                    <button onclick="inputKey('+/-')" class="btn-cell utility">±</button>
-                    <button onclick="inputKey('%')" class="btn-cell utility">%</button>
-                    <button onclick="inputKey('/')" class="btn-cell operator">÷</button>
-                </div>
-                <div class="keypad-row">
-                    <button onclick="inputKey('7')" class="btn-cell">7</button>
-                    <button onclick="inputKey('8')" class="btn-cell">8</button>
-                    <button onclick="inputKey('9')" class="btn-cell">9</button>
-                    <button onclick="inputKey('*')" class="btn-cell operator">×</button>
-                </div>
-                <div class="keypad-row">
-                    <button onclick="inputKey('4')" class="btn-cell">4</button>
-                    <button onclick="inputKey('5')" class="btn-cell">5</button>
-                    <button onclick="inputKey('6')" class="btn-cell">6</button>
-                    <button onclick="inputKey('-')" class="btn-cell operator">−</button>
-                </div>
-                <div class="keypad-row">
-                    <button onclick="inputKey('1')" class="btn-cell">1</button>
-                    <button onclick="inputKey('2')" class="btn-cell">2</button>
-                    <button onclick="inputKey('3')" class="btn-cell">3</button>
-                    <button onclick="inputKey('+')" class="btn-cell operator">+</button>
-                </div>
-                <div class="keypad-row">
-                    <button onclick="inputKey('0')" class="btn-cell wide-capsule">0</button>
-                    <button onclick="inputKey('.')" class="btn-cell">.</button>
-                    <button onclick="inputKey('=')" class="btn-cell operator">=</button>
-                </div>
-            </div>
-
-            <button onclick="commitEntryToDatabase()" class="commit-log-action">📥 SAVE TRANSACTION LOG</button>
-        </div>
-
-        <div id="historyView" class="history-ledger-container hidden">
-            <div id="emptyState" class="empty-placeholder">No transaction logs captured today.</div>
-            <div id="logList"></div>
-        </div>
-    </div>
-
-    <script>
-        let currentStringInput = '';
-        let temporaryFormulaStorage = '';
-        let activePaymentMode = 'CASH';
-        let transactionLogsDatabase = JSON.parse(localStorage.getItem('billing_logs')) || [];
-
-        refreshLedgerViewUI();
-
-        function inputKey(keyValue) {
-            const displayOutputElement = document.getElementById('calcDisplay');
-            const calculationFormulaElement = document.getElementById('calcFormula');
-            
-            if (keyValue === 'C') {
-                currentStringInput = '';
-                temporaryFormulaStorage = '';
-                displayOutputElement.innerText = '0';
-                calculationFormulaElement.innerText = '';
-            } else if (keyValue === '+/-') {
-                if(!currentStringInput || currentStringInput === '0') return;
-                if(currentStringInput.startsWith('-')) {
-                    currentStringInput = currentStringInput.substring(1);
-                } else {
-                    currentStringInput = '-' + currentStringInput;
-                }
-                displayOutputElement.innerText = currentStringInput;
-            } else if (keyValue === '%') {
-                if(!currentStringInput) return;
-                let parsedVal = parseFloat(currentStringInput) / 100;
-                currentStringInput = String(parsedVal);
-                displayOutputElement.innerText = currentStringInput;
-            } else if (keyValue === '=') {
-                if (!currentStringInput) return;
-                
-                try {
-                    temporaryFormulaStorage = currentStringInput;
-                    calculationFormulaElement.innerText = temporaryFormulaStorage + ' =';
-                    
-                    let componentsList = currentStringInput.match(/(\d+\.?\d*)|([\+\-\*\/])/g);
-                    if (!componentsList) return;
-                    
-                    // High Precedence Operations Execution: Multiplications and Divisions
-                    for (let index = 0; index < componentsList.length; index++) {
-                        if (componentsList[index] === '*' || componentsList[index] === '/') {
-                            let leftHandVal = parseFloat(componentsList[index - 1]);
-                            let rightHandVal = parseFloat(componentsList[index + 1]);
-                            let operationsResult = componentsList[index] === '*' ? leftHandVal * rightHandVal : leftHandVal / rightHandVal;
-                            componentsList.splice(index - 1, 3, operationsResult);
-                            index--;
-                        }
-                    }
-                    
-                    // Low Precedence Operations Execution: Additions and Subtractions
-                    let rollingSumTotal = parseFloat(componentsList[0]);
-                    for (let index = 1; index < componentsList.length; index += 2) {
-                        let dynamicOperator = componentsList[index];
-                        let targetNextValue = parseFloat(componentsList[index + 1]);
-                        if (dynamicOperator === '+') rollingSumTotal += targetNextValue;
-                        if (dynamicOperator === '-') rollingSumTotal -= targetNextValue;
-                    }
-                    
-                    currentStringInput = String(Number(rollingSumTotal).toFixed(2));
-                    displayOutputElement.innerText = currentStringInput;
-                } catch (parsingError) {
-                    alert('Invalid Math Statement Structure');
-                    currentStringInput = '';
-                    temporaryFormulaStorage = '';
-                    displayOutputElement.innerText = '0';
-                    calculationFormulaElement.innerText = '';
-                }
-            } else {
-                if (currentStringInput && !isNaN(keyValue) && temporaryFormulaStorage !== '' && currentStringInput === displayOutputElement.innerText) {
-                    currentStringInput = '';
-                    temporaryFormulaStorage = '';
-                    calculationFormulaElement.innerText = '';
-                }
-                currentStringInput += keyValue;
-                displayOutputElement.innerText = currentStringInput;
-            }
-        }
-
-        function updatePaymentSelection(targetSelectionMode) {
-            activePaymentMode = targetSelectionMode;
-            const cashToggleOptionButton = document.getElementById('modeCash');
-            const onlineToggleOptionButton = document.getElementById('modeOnline');
-            
-            if (targetSelectionMode === 'CASH') {
-                cashToggleOptionButton.className = "method-option selected-cash";
-                onlineToggleOptionButton.className = "method-option";
-            } else {
-                cashToggleOptionButton.className = "method-option";
-                onlineToggleOptionButton.className = "method-option selected-online";
-            }
-        }
-
-        function commitEntryToDatabase() {
-            const evaluationAmount = parseFloat(currentStringInput);
-            if (isNaN(evaluationAmount) || evaluationAmount <= 0) {
-                alert('Perform calculations or input a sum before logging.');
-                return;
-            }
-
-            const activeDateInstance = new Date();
-            const customizedDateString = activeDateInstance.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
-            const customizedTimeString = activeDateInstance.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-            const databaseStringFormula = temporaryFormulaStorage || `${evaluationAmount}`;
-            const uniqueDatabaseRowId = Date.now();
-
-            const newlyCreatedLogObject = { 
-                id: uniqueDatabaseRowId, 
-                amount: evaluationAmount, 
-                formula: databaseStringFormula, 
-                mode: activePaymentMode, 
-                date: customizedDateString, 
-                time: customizedTimeString 
-            };
-            
-            transactionLogsDatabase.unshift(newlyCreatedLogObject);
-            localStorage.setItem('billing_logs', JSON.stringify(transactionLogsDatabase));
-            
-            alert(`Record logged successfully: ₹${evaluationAmount.toFixed(2)} [${activePaymentMode}]`);
-            
-            currentStringInput = '';
-            temporaryFormulaStorage = '';
-            document.getElementById('calcDisplay').innerText = '0';
-            document.getElementById('calcFormula').innerText = '';
-            
-            refreshLedgerViewUI();
-        }
-
-        function toggleRowAccordionDrawer(targetRecordId) {
-            const selectedDrawerElement = document.getElementById(`details-${targetRecordId}`);
-            if(selectedDrawerElement) {
-                selectedDrawerElement.classList.toggle('hidden');
-            }
-        }
-
-        function clearLogItemEntry(targetRecordId) {
-            if (confirm('Permanently delete this invoice log entry from mobile database memory?')) {
-                transactionLogsDatabase = transactionLogsDatabase.filter(itemRecord => itemRecord.id !== targetRecordId);
-                localStorage.setItem('billing_logs', JSON.stringify(transactionLogsDatabase));
-                refreshLedgerViewUI();
-            }
-        }
-
-        function modifyLogItemEntry(targetRecordId) {
-            const targetingItemIndex = transactionLogsDatabase.findIndex(itemRecord => itemRecord.id === targetRecordId);
-            if (targetingItemIndex === -1) return;
-
-            const trackingHistoricalAmount = transactionLogsDatabase[targetingItemIndex].amount;
-            const configurationAmountPromptResponse = prompt("Alter recorded billing base total:", trackingHistoricalAmount.toFixed(2));
-            
-            if (configurationAmountPromptResponse === null) return; 
-            
-            const sanitizedParsedResponseAmount = parseFloat(configurationAmountPromptResponse);
-            if (isNaN(sanitizedParsedResponseAmount) || sanitizedParsedResponseAmount <= 0) {
-                alert("Input a valid numeric invoice valuation.");
-                return;
-            }
-
-            transactionLogsDatabase[targetingItemIndex].amount = sanitizedParsedResponseAmount;
-            transactionLogsDatabase[targetingItemIndex].formula = `${sanitizedParsedResponseAmount.toFixed(2)} (Manually Edited)`;
-            
-            localStorage.setItem('billing_logs', JSON.stringify(transactionLogsDatabase));
-            refreshLedgerViewUI();
-        }
-
-        function refreshLedgerViewUI() {
-            document.getElementById('countDisplay').innerText = transactionLogsDatabase.length;
-            const listOutputWrapperElement = document.getElementById('logList');
-            const cleanDatabaseEmptyNoticeState = document.getElementById('emptyState');
-            
-            if (transactionLogsDatabase.length === 0) {
-                cleanDatabaseEmptyNoticeState.classList.remove('hidden');
-                listOutputWrapperElement.innerHTML = '';
-                return;
-            }
-            
-            cleanDatabaseEmptyNoticeState.classList.add('hidden');
-            listOutputWrapperElement.innerHTML = transactionLogsDatabase.map(itemRow => `
-                <div class="ledger-card">
-                    <div onclick="toggleRowAccordionDrawer(${itemRow.id})" class="ledger-summary-row">
-                        <div>
-                            <div class="record-value ${itemRow.mode === 'CASH' ? 'cash-label' : 'online-label'}">₹${Number(itemRow.amount).toFixed(2)}</div>
-                            <div class="record-metadata">${itemRow.mode} • <span>Tap for options ⚙️</span></div>
-                        </div>
-                        <div class="record-timestamp">
-                            <div class="record-date-str">${itemRow.date}</div>
-                            <div class="record-time-str">${itemRow.time}</div>
-                        </div>
-                    </div>
-                    
-                    <div id="details-${itemRow.id}" class="ledger-drawer hidden">
-                        <div>
-                            <span class="drawer-subheading">Mathematical Composition Trace</span>
-                            <div class="breakdown-display">🧮 ${itemRow.formula || itemRow.amount}</div>
-                        </div>
-                        
-                        <div class="control-panel-row">
-                            <button onclick="event.stopPropagation(); modifyLogItemEntry(${itemRow.id})" class="panel-action-btn edit-trigger">✏️ Edit Log</button>
-                            <button onclick="event.stopPropagation(); clearLogItemEntry(${itemRow.id})" class="panel-action-btn delete-trigger">🗑️ Delete</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderView(viewTargetTokenId) {
-            const primaryCalcTabElement = document.getElementById('calcTab');
-            const primaryLogsTabElement = document.getElementById('historyTab');
-            const applicationCalculatorViewport = document.getElementById('calculatorView');
-            const applicationDatabaseLedgerViewport = document.getElementById('historyView');
-
-            if (viewTargetTokenId === 'calculator') {
-                primaryCalcTabElement.classList.add('active');
-                primaryLogsTabElement.classList.remove('active');
-                applicationCalculatorViewport.classList.remove('hidden');
-                applicationDatabaseLedgerViewport.classList.add('hidden');
-            } else {
-                primaryLogsTabElement.classList.add('active');
-                primaryCalcTabElement.classList.remove('active');
-                applicationCalculatorViewport.classList.add('hidden');
-                applicationDatabaseLedgerViewport.classList.remove('hidden');
-            }
-        }
-    </script>
-</body>
-</html>
+        .panel-action-btn { flex: 1; border: none; padding: 10px; font-size: 13px; font-weight: 6
