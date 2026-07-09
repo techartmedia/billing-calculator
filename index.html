@@ -11,76 +11,131 @@
     
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkJpbGxpbmcgQ2FsY3VsYXRvciIsCiAgInNob3J0X25hbWUiOiAiQ2FsY3VsYXRvciIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzFlMjkzYiIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTYiCiB9">
 
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        button { touch-action: manipulation; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #ffffff; user-select: none; -webkit-user-select: none; }
+        
+        .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; }
+        
+        /* Navigation Tabs Layout */
+        .tabs-bar { display: flex; background-color: #f8fafc; border-b: 1px solid #e2e8f0; flex-shrink: 0; }
+        .tab-btn { flex: 1; padding: 16px 0; text-align: center; font-weight: bold; font-size: 14px; border: none; background: transparent; color: #64748b; border-bottom: 2px solid transparent; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; background-color: #ffffff; }
+        
+        /* Main Application Workspace Layout */
+        .view-layout { padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        .hidden { display: none !important; }
+        
+        /* Numerical POS Display Monitor Component */
+        .screen-monitor { background-color: #0f172a; padding: 20px; rounded-panel: 16px; border-radius: 16px; margin-bottom: 12px; display: flex; flex-direction: column; justify-content: center; min-height: 100px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        .formula-line { color: #94a3b8; font-family: monospace; text-align: right; font-size: 14px; margin-bottom: 4px; height: 16px; overflow-x: auto; white-space: nowrap; }
+        .display-line { color: #34d399; font-family: monospace; text-align: right; font-size: 36px; font-weight: 500; overflow-x: auto; white-space: nowrap; }
+        .formula-line::-webkit-scrollbar, .display-line::-webkit-scrollbar { display: none; }
+
+        /* Payment Selector Component Design */
+        .selector-label { block-display: block; font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; padding: 0 4px; }
+        .mode-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .mode-btn { flex: 1; padding: 12px; font-size: 12px; font-weight: bold; border-radius: 12px; text-align: center; border: 2px solid transparent; background-color: #f1f5f9; color: #475569; cursor: pointer; }
+        .mode-btn.cash-active { border-color: #10b981; background-color: #ecfdf5; color: #059669; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .mode-btn.online-active { border-color: #4f46e5; background-color: #e0e7ff; color: #4f46e5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+        /* Mobile Standard Native Keypad Layout Component */
+        .keypad-grid { display: grid; grid-template-cols: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; flex-1: 1; align-content: center; }
+        .key-btn { background-color: #f8fafc; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; padding: 16px 0; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05); touch-action: manipulation; }
+        .key-btn:active { background-color: #e2e8f0; }
+        .key-btn.wide-zero { grid-column: span 2; }
+        .key-btn.operator { background-color: #fff7ed; color: #ea580c; border-color: #ffedd5; }
+        .key-btn.operator:active { background-color: #ffedd5; }
+        .key-btn.clear { background-color: #fff5f5; color: #e53e3e; border-color: #fed7d7; }
+        .key-btn.clear:active { background-color: #fed7d7; }
+        .key-btn.equals { grid-column: span 3; background-color: #4f46e5; color: #ffffff; border-color: #4f46e5; font-size: 24px; }
+        .key-btn.equals:active { background-color: #4338ca; }
+
+        /* Action Executables Drawer Styles */
+        .save-btn { w-width: 100%; background-color: #059669; color: #ffffff; border: none; padding: 14px; font-weight: bold; font-size: 16px; border-radius: 12px; cursor: pointer; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); flex-shrink: 0; }
+        .save-btn:active { background-color: #047857; }
+
+        /* History System Layout View */
+        .history-wrapper { padding: 16px; overflow-y: auto; background-color: #f8fafc; flex: 1; width: 100%; }
+        .empty-text { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 80px; font-weight: 500; }
+        .log-box { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .log-summary { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .log-summary:active { background-color: #f1f5f9; }
+        .log-amount { font-size: 20px; font-weight: bold; font-family: monospace; }
+        .log-amount.cash { color: #059669; }
+        .log-amount.online { color: #4f46e5; }
+        .log-meta { font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-top: 2px; }
+        .log-meta span { color: #4f46e5; font-weight: normal; text-transform: none; }
+        .log-time-block { text-align: right; }
+        .log-date { font-size: 12px; font-weight: bold; color: #334155; font-family: monospace; }
+        .log-time { font-size: 11px; color: #94a3b8; font-family: monospace; margin-top: 2px; }
+
+        /* Collapsible Drawer Core Styles */
+        .log-drawer { padding: 16px; background-color: #f8fafc; border-t: 1px solid #f1f5f9; border-top: 1px solid #e2e8f0; }
+        .formula-card { font-size: 13px; color: #475569; font-family: monospace; background-color: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); }
+        .drawer-label { font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; tracking: 0.5px; }
+        
+        .actions-row { display: flex; gap: 8px; margin-top: 12px; }
+        .action-btn { flex: 1; border: 1px solid transparent; padding: 8px; font-size: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; text-align: center; }
+        .action-btn.edit { color: #b45309; background-color: #fffbeb; border-color: #fde68a; }
+        .action-btn.edit:active { background-color: #fef3c7; }
+        .action-btn.delete { color: #e11d48; background-color: #fff1f2; border-color: #fecdd3; }
+        .action-btn.delete:active { background-color: #ffe4e6; }
     </style>
 </head>
-<body class="bg-white select-none antialiased text-slate-800 flex flex-col h-full w-full">
+<body>
 
-    <div class="flex border-b border-slate-200 bg-slate-50 shrink-0 w-full">
-        <button id="calcTab" onclick="switchTab('calculator')" class="flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-indigo-600 bg-white text-indigo-600 transition-all">
-            🧮 Calculator
-        </button>
-        <button id="historyTab" onclick="switchTab('history')" class="flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-all">
-            📜 Logs (<span id="historyCount">0</span>)
-        </button>
-    </div>
-
-    <div id="calculatorView" class="p-4 flex flex-col flex-1 justify-between overflow-hidden h-full w-full">
-        
-        <div class="bg-slate-900 p-5 rounded-2xl mb-3 shadow-inner flex flex-col justify-center min-h-[100px] shrink-0">
-            <div id="calcFormula" class="text-slate-400 text-xs font-mono text-right mb-1 h-4 overflow-x-auto no-scrollbar whitespace-nowrap"></div>
-            <div id="calcDisplay" class="text-emerald-400 text-4xl font-mono font-medium text-right overflow-x-auto no-scrollbar whitespace-nowrap">0</div>
+    <div class="app-container">
+        <div class="tabs-bar">
+            <button id="calcTab" onclick="switchTab('calculator')" class="tab-btn active">🧮 Calculator</button>
+            <button id="historyTab" onclick="switchTab('history')" class="tab-btn">📜 Logs (<span id="historyCount">0</span>)</button>
         </div>
 
-        <div class="mb-3 shrink-0">
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 px-1">Payment Method</label>
-            <div class="flex gap-2">
-                <button id="modeCash" onclick="setPaymentMode('CASH')" class="flex-1 py-2.5 text-xs font-bold tracking-wider rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-600 shadow-sm transition-all">
-                    💵 CASH
-                </button>
-                <button id="modeOnline" onclick="setPaymentMode('ONLINE')" class="flex-1 py-2.5 text-xs font-bold tracking-wider rounded-xl border-2 border-transparent bg-slate-100 text-slate-600 transition-all">
-                    💳 ONLINE
-                </button>
+        <div id="calculatorView" class="view-layout">
+            <div class="screen-monitor">
+                <div id="calcFormula" class="formula-line"></div>
+                <div id="calcDisplay" class="display-line">0</div>
             </div>
+
+            <div>
+                <span class="selector-label">Payment Method</span>
+                <div class="mode-row">
+                    <button id="modeCash" onclick="setPaymentMode('CASH')" class="mode-btn cash-active">💵 CASH</button>
+                    <button id="modeOnline" onclick="setPaymentMode('ONLINE')" class="mode-btn">💳 ONLINE</button>
+                </div>
+            </div>
+
+            <div class="keypad-grid">
+                <button onclick="press('7')" class="key-btn">7</button>
+                <button onclick="press('8')" class="key-btn">8</button>
+                <button onclick="press('9')" class="key-btn">9</button>
+                <button onclick="press('/')" class="key-btn operator">/</button>
+
+                <button onclick="press('4')" class="key-btn">4</button>
+                <button onclick="press('5')" class="key-btn">5</button>
+                <button onclick="press('6')" class="key-btn">6</button>
+                <button onclick="press('*')" class="key-btn operator">*</button>
+
+                <button onclick="press('1')" class="key-btn">1</button>
+                <button onclick="press('2')" class="key-btn">2</button>
+                <button onclick="press('3')" class="key-btn">3</button>
+                <button onclick="press('-')" class="key-btn operator">-</button>
+
+                <button onclick="press('0')" class="key-btn wide-zero">0</button>
+                <button onclick="press('.')" class="key-btn">.</button>
+                <button onclick="press('C')" class="key-btn clear">C</button>
+                
+                <button onclick="press('=')" class="key-btn equals">=</button>
+                <button onclick="press('+')" class="key-btn operator">+</button>
+            </div>
+
+            <button onclick="saveBill()" class="save-btn">💾 SAVE BILL LOG</button>
         </div>
 
-        <div class="grid grid-cols-4 gap-2 mb-3 flex-1 items-stretch content-center">
-            <button onclick="press('7')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">7</button>
-            <button onclick="press('8')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">8</button>
-            <button onclick="press('9')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">9</button>
-            <button onclick="press('/')" class="bg-orange-50 text-orange-600 rounded-xl font-black text-xl active:bg-orange-200 border border-orange-100">/</button>
-
-            <button onclick="press('4')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">4</button>
-            <button onclick="press('5')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">5</button>
-            <button onclick="press('6')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">6</button>
-            <button onclick="press('*')" class="bg-orange-50 text-orange-600 rounded-xl font-black text-xl active:bg-orange-200 border border-orange-100">*</button>
-
-            <button onclick="press('1')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">1</button>
-            <button onclick="press('2')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">2</button>
-            <button onclick="press('3')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">3</button>
-            <button onclick="press('-')" class="bg-orange-50 text-orange-600 rounded-xl font-black text-xl active:bg-orange-200 border border-orange-100">-</button>
-
-            <button onclick="press('0')" class="col-span-2 bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">0</button>
-            <button onclick="press('.')" class="bg-slate-50 text-slate-800 rounded-xl font-bold text-xl active:bg-slate-200 border border-slate-200/60 shadow-sm">.</button>
-            <button onclick="press('C')" class="bg-rose-50 text-rose-600 rounded-xl font-bold text-xl active:bg-rose-200 border border-rose-100">C</button>
-            
-            <button onclick="press('=')" class="col-span-3 bg-indigo-600 text-white py-3 rounded-xl font-bold text-2xl active:bg-indigo-700 shadow-md transition-all">=</button>
-            <button onclick="press('+')" class="bg-orange-50 text-orange-600 rounded-xl font-black text-xl active:bg-orange-200 border border-orange-100">+</button>
+        <div id="historyView" class="history-wrapper hidden">
+            <div id="emptyState" class="empty-text">No saved bills yet.</div>
+            <div id="logList"></div>
         </div>
-
-        <button onclick="saveBill()" class="w-full bg-emerald-600 text-white py-3.5 rounded-xl font-bold text-base tracking-wider shadow-md active:bg-emerald-700 transition-all shrink-0">
-            💾 SAVE BILL LOG
-        </button>
-    </div>
-
-    <div id="historyView" class="p-4 hidden flex-1 flex-col overflow-y-auto bg-slate-50 w-full h-full">
-        <div id="emptyState" class="text-center text-slate-400 mt-20 font-medium text-sm">No saved bills yet.</div>
-        <div id="logList" class="space-y-3 w-full"></div>
     </div>
 
     <script>
@@ -131,11 +186,11 @@
             const onlineBtn = document.getElementById('modeOnline');
             
             if (mode === 'CASH') {
-                cashBtn.className = "flex-1 py-2.5 text-xs font-bold tracking-wider rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-600 shadow-sm transition-all";
-                onlineBtn.className = "flex-1 py-2.5 text-xs font-bold tracking-wider rounded-xl border-2 border-transparent bg-slate-100 text-slate-600 transition-all";
+                cashBtn.className = "mode-btn cash-active";
+                onlineBtn.className = "mode-btn";
             } else {
-                cashBtn.className = "flex-1 py-2.5 text-xs font-bold tracking-wider rounded-xl border-2 border-transparent bg-slate-100 text-slate-600 transition-all";
-                onlineBtn.className = "flex-1 py-2.5 text-xs font-bold tracking-wider rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-600 shadow-sm transition-all";
+                cashBtn.className = "mode-btn";
+                onlineBtn.className = "mode-btn online-active";
             }
         }
 
@@ -217,31 +272,27 @@
             
             emptyEl.classList.add('hidden');
             listEl.innerHTML = logs.map(log => `
-                <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm w-full">
-                    <div onclick="toggleLogDetails(${log.id})" class="p-4 flex justify-between items-center hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer">
+                <div class="log-box">
+                    <div onclick="toggleLogDetails(${log.id})" class="log-summary">
                         <div>
-                            <div class="text-xl font-mono font-bold ${log.mode === 'CASH' ? 'text-emerald-600' : 'text-indigo-600'}">₹${Number(log.amount).toFixed(2)}</div>
-                            <div class="text-[10px] font-bold tracking-wider uppercase mt-0.5 text-slate-400">${log.mode} • <span class="text-indigo-500 font-normal normal-case">Tap for breakdown 🔍</span></div>
+                            <div class="log-amount ${log.mode === 'CASH' ? 'cash' : 'online'}">₹${Number(log.amount).toFixed(2)}</div>
+                            <div class="log-meta">${log.mode} • <span>Tap for breakdown 🔍</span></div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-xs font-bold text-slate-700 font-mono">${log.date}</div>
-                            <div class="text-[11px] text-slate-400 font-mono mt-0.5">${log.time}</div>
+                        <div class="log-time-block">
+                            <div class="log-date">${log.date}</div>
+                            <div class="log-time">${log.time}</div>
                         </div>
                     </div>
                     
-                    <div id="details-${log.id}" class="hidden p-4 bg-slate-50 border-t border-slate-100">
-                        <div class="mb-3">
-                            <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">Breakdown Formula</span>
-                            <div class="text-xs text-slate-600 font-mono bg-white px-3 py-2 rounded-lg border border-slate-200/80 w-full shadow-inner">🧮 ${log.formula || log.amount}</div>
+                    <div id="details-${log.id}" class="log-drawer hidden">
+                        <div>
+                            <span class="drawer-label">Breakdown Formula</span>
+                            <div class="formula-card">🧮 ${log.formula || log.amount}</div>
                         </div>
                         
-                        <div class="flex gap-2">
-                            <button onclick="event.stopPropagation(); editLog(${log.id})" class="flex-1 py-2 text-xs font-bold text-amber-700 bg-amber-50 rounded-lg border border-amber-200/60 active:bg-amber-100 transition-colors">
-                                ✏️ Edit
-                            </button>
-                            <button onclick="event.stopPropagation(); deleteLog(${log.id})" class="flex-1 py-2 text-xs font-bold text-rose-600 bg-rose-50 rounded-lg border border-rose-200/60 active:bg-rose-100 transition-colors">
-                                ❌ Delete
-                            </button>
+                        <div class="actions-row">
+                            <button onclick="event.stopPropagation(); editLog(${log.id})" class="action-btn edit">✏️ Edit</button>
+                            <button onclick="event.stopPropagation(); deleteLog(${log.id})" class="action-btn delete">❌ Delete</button>
                         </div>
                     </div>
                 </div>
@@ -255,18 +306,15 @@
             const histView = document.getElementById('historyView');
 
             if (tab === 'calculator') {
-                calcTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-indigo-600 bg-white text-indigo-600 transition-all";
-                histTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-transparent text-slate-500 transition-all";
+                calcTab.classList.add('active');
+                histTab.classList.remove('active');
                 calcView.classList.remove('hidden');
-                calcView.classList.add('flex');
                 histView.classList.add('hidden');
             } else {
-                histTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-indigo-600 bg-white text-indigo-600 transition-all";
-                calcTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-transparent text-slate-500 transition-all";
+                histTab.classList.add('active');
+                calcTab.classList.remove('active');
                 calcView.classList.add('hidden');
-                calcView.classList.remove('flex');
                 histView.classList.remove('hidden');
-                histView.classList.add('flex');
             }
         }
         
