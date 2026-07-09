@@ -170,9 +170,18 @@
             updateHistoryUI();
         }
 
-        // --- MANAGE HISTORY CONTROLS ---
+        // --- CLICK TO TOGGLE EXPAND BREAKDOWN ---
+        function toggleLogDetails(id) {
+            const detailsPanel = document.getElementById(`details-${id}`);
+            if (detailsPanel.classList.contains('hidden')) {
+                detailsPanel.classList.remove('hidden');
+            } else {
+                detailsPanel.classList.add('hidden');
+            }
+        }
+
         function deleteLog(id) {
-            if (confirm('Delete this bill record permanently?')) {
+            if (confirm('Delete this bill permanently?')) {
                 logs = logs.filter(log => log.id !== id);
                 localStorage.setItem('billing_logs', JSON.stringify(logs));
                 updateHistoryUI();
@@ -190,7 +199,7 @@
             
             const newAmount = parseFloat(newAmountStr);
             if (isNaN(newAmount) || newAmount <= 0) {
-                alert("Please enter a valid number total.");
+                alert("Please type a valid number total.");
                 return;
             }
 
@@ -213,4 +222,63 @@
             }
             
             emptyEl.classList.add('hidden');
-            listEl.innerHTML = logs.map(log =>
+            listEl.innerHTML = logs.map(log => `
+                <div class="bg-slate-900 border border-slate-800/60 rounded-xl overflow-hidden shadow-md cursor-pointer">
+                    <div onclick="toggleLogDetails(${log.id})" class="p-4 flex justify-between items-center hover:bg-slate-800/30 active:bg-slate-800/60 transition-colors">
+                        <div>
+                            <div class="text-2xl font-mono font-bold ${log.mode === 'CASH' ? 'text-emerald-400' : 'text-indigo-400'}">₹${Number(log.amount).toFixed(2)}</div>
+                            <div class="text-[10px] text-slate-500 font-bold tracking-wider mt-1 uppercase">${log.mode} • <span class="text-indigo-400 font-normal">Click to open breakdown 🔍</span></div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs font-bold text-slate-300 font-mono">${log.date}</div>
+                            <div class="text-[11px] text-slate-500 font-mono mt-0.5">${log.time}</div>
+                        </div>
+                    </div>
+                    
+                    <div id="details-${log.id}" class="hidden p-4 bg-slate-950/60 border-t border-slate-800/60">
+                        <div class="mb-3">
+                            <span class="text-[11px] font-bold uppercase text-slate-500 block mb-1">Calculation Breakdown:</span>
+                            <div class="text-sm text-slate-300 font-mono bg-black/40 px-3 py-2 rounded border border-slate-800/50 inline-block w-full">🧮 ${log.formula || log.amount}</div>
+                        </div>
+                        
+                        <div class="flex gap-2 pt-1">
+                            <button onclick="event.stopPropagation(); editLog(${log.id})" class="flex-1 py-2 text-xs font-bold text-amber-400 bg-amber-950/20 rounded-md border border-amber-900/40 active:bg-amber-900/40 transition-colors">
+                                ✏️ Edit Bill
+                            </button>
+                            <button onclick="event.stopPropagation(); deleteLog(${log.id})" class="flex-1 py-2 text-xs font-bold text-rose-400 bg-rose-950/20 rounded-md border border-rose-900/40 active:bg-rose-900/40 transition-colors">
+                                ❌ Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchTab(tab) {
+            const calcTab = document.getElementById('calcTab');
+            const histTab = document.getElementById('historyTab');
+            const calcView = document.getElementById('calculatorView');
+            const histView = document.getElementById('historyView');
+
+            if (tab === 'calculator') {
+                calcTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-indigo-500 bg-slate-900 text-white transition-all";
+                histTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all";
+                calcView.classList.remove('hidden');
+                histView.classList.add('hidden');
+            } else {
+                histTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-indigo-500 bg-slate-900 text-white transition-all";
+                calcTab.className = "flex-1 py-4 text-center font-bold text-sm tracking-wide uppercase border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all";
+                calcView.classList.add('hidden');
+                histView.classList.remove('hidden');
+                histView.classList.add('flex');
+            }
+        }
+        
+        if ('serviceWorker' in navigator) {
+            const swCode = "self.addEventListener('fetch', function(e){});";
+            const blob = new Blob([swCode], {type: 'application/javascript'});
+            navigator.serviceWorker.register(URL.createObjectURL(blob));
+        }
+    </script>
+</body>
+</html>
