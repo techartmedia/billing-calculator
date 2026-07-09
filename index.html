@@ -12,8 +12,8 @@
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkJpbGxpbmcgQ2FsY3VsYXRvciIsCiAgInNob3J0X25hbWUiOiAiQ2FsY3VsYXRvciIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzFlMjkzYiIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTYiCiB9">
 
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #ffffff; user-select: none; -webkit-user-select: none; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+        html, body { height: 100%; width: 100%; overflow: hidden; background-color: #ffffff; user-select: none; -webkit-user-select: none; }
         
         .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; }
         
@@ -22,40 +22,45 @@
         .tab-btn { flex: 1; padding: 16px 0; text-align: center; font-weight: bold; font-size: 14px; border: none; background: transparent; color: #64748b; border-bottom: 2px solid transparent; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
         .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; background-color: #ffffff; }
         
-        /* Main Application Workspace Layout */
+        /* Main View Container */
         .view-layout { padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
         .hidden { display: none !important; }
         
-        /* Numerical POS Display Monitor Component */
-        .screen-monitor { background-color: #0f172a; padding: 20px; border-radius: 16px; margin-bottom: 12px; display: flex; flex-direction: column; justify-content: center; min-height: 100px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        /* Screen Monitor */
+        .screen-monitor { background-color: #0f172a; padding: 20px; border-radius: 16px; margin-bottom: 12px; display: flex; flex-direction: column; justify-content: center; min-height: 100px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); flex-shrink: 0; }
         .formula-line { color: #94a3b8; font-family: monospace; text-align: right; font-size: 14px; margin-bottom: 4px; height: 16px; overflow-x: auto; white-space: nowrap; }
         .display-line { color: #34d399; font-family: monospace; text-align: right; font-size: 36px; font-weight: 500; overflow-x: auto; white-space: nowrap; }
         .formula-line::-webkit-scrollbar, .display-line::-webkit-scrollbar { display: none; }
 
-        /* Payment Selector Component Design */
+        /* Payment Selector */
         .selector-label { display: block; font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; padding: 0 4px; }
-        .mode-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .mode-row { display: flex; gap: 8px; margin-bottom: 12px; flex-shrink: 0; }
         .mode-btn { flex: 1; padding: 12px; font-size: 12px; font-weight: bold; border-radius: 12px; text-align: center; border: 2px solid transparent; background-color: #f1f5f9; color: #475569; cursor: pointer; }
         .mode-btn.cash-active { border-color: #10b981; background-color: #ecfdf5; color: #059669; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .mode-btn.online-active { border-color: #4f46e5; background-color: #e0e7ff; color: #4f46e5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 
-        /* Mobile Standard Native Keypad Layout Component */
-        .keypad-grid { display: grid; grid-template-cols: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; flex: 1; align-content: center; }
-        .key-btn { background-color: #f8fafc; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; padding: 16px 0; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05); touch-action: manipulation; }
+        /* Unbreakable Mobile Keypad Rows */
+        .keypad-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; flex: 1; justify-content: center; }
+        .key-row { display: flex; gap: 8px; width: 100%; }
+        .key-btn { flex: 1; background-color: #f8fafc; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; padding: 14px 0; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05); touch-action: manipulation; }
         .key-btn:active { background-color: #e2e8f0; }
-        .key-btn.wide-zero { grid-column: span 2; }
+        
+        /* Custom Width Scaling For Row Layouts */
+        .key-btn.w-2x { flex: 2; }
+        .key-btn.w-3x { flex: 3; }
+        
         .key-btn.operator { background-color: #fff7ed; color: #ea580c; border-color: #ffedd5; }
         .key-btn.operator:active { background-color: #ffedd5; }
         .key-btn.clear { background-color: #fff5f5; color: #e53e3e; border-color: #fed7d7; }
         .key-btn.clear:active { background-color: #fed7d7; }
-        .key-btn.equals { grid-column: span 3; background-color: #4f46e5; color: #ffffff; border-color: #4f46e5; font-size: 24px; }
+        .key-btn.equals { background-color: #4f46e5; color: #ffffff; border-color: #4f46e5; font-size: 24px; }
         .key-btn.equals:active { background-color: #4338ca; }
 
-        /* Action Executables Drawer Styles */
+        /* Save Button Footer */
         .save-btn { width: 100%; background-color: #059669; color: #ffffff; border: none; padding: 14px; font-weight: bold; font-size: 16px; border-radius: 12px; cursor: pointer; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); flex-shrink: 0; }
         .save-btn:active { background-color: #047857; }
 
-        /* History System Layout View */
+        /* Logs Tab Ledger View */
         .history-wrapper { padding: 16px; overflow-y: auto; background-color: #f8fafc; flex: 1; width: 100%; }
         .empty-text { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 80px; font-weight: 500; }
         .log-box { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -70,7 +75,7 @@
         .log-date { font-size: 12px; font-weight: bold; color: #334155; font-family: monospace; }
         .log-time { font-size: 11px; color: #94a3b8; font-family: monospace; margin-top: 2px; }
 
-        /* Collapsible Drawer Core Styles */
+        /* Collapse Breakdown Drawer Panel */
         .log-drawer { padding: 16px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; }
         .formula-card { font-size: 13px; color: #475569; font-family: monospace; background-color: #ffffff; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); }
         .drawer-label { font-size: 10px; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -105,28 +110,34 @@
                 </div>
             </div>
 
-            <div class="keypad-grid">
-                <button onclick="press('7')" class="key-btn">7</button>
-                <button onclick="press('8')" class="key-btn">8</button>
-                <button onclick="press('9')" class="key-btn">9</button>
-                <button onclick="press('/')" class="key-btn operator">/</button>
-
-                <button onclick="press('4')" class="key-btn">4</button>
-                <button onclick="press('5')" class="key-btn">5</button>
-                <button onclick="press('6')" class="key-btn">6</button>
-                <button onclick="press('*')" class="key-btn operator">*</button>
-
-                <button onclick="press('1')" class="key-btn">1</button>
-                <button onclick="press('2')" class="key-btn">2</button>
-                <button onclick="press('3')" class="key-btn">3</button>
-                <button onclick="press('-')" class="key-btn operator">-</button>
-
-                <button onclick="press('0')" class="key-btn wide-zero">0</button>
-                <button onclick="press('.')" class="key-btn">.</button>
-                <button onclick="press('C')" class="key-btn clear">C</button>
-                
-                <button onclick="press('=')" class="key-btn equals">=</button>
-                <button onclick="press('+')" class="key-btn operator">+</button>
+            <div class="keypad-container">
+                <div class="key-row">
+                    <button onclick="press('7')" class="key-btn">7</button>
+                    <button onclick="press('8')" class="key-btn">8</button>
+                    <button onclick="press('9')" class="key-btn">9</button>
+                    <button onclick="press('/')" class="key-btn operator">/</button>
+                </div>
+                <div class="key-row">
+                    <button onclick="press('4')" class="key-btn">4</button>
+                    <button onclick="press('5')" class="key-btn">5</button>
+                    <button onclick="press('6')" class="key-btn">6</button>
+                    <button onclick="press('*')" class="key-btn operator">*</button>
+                </div>
+                <div class="key-row">
+                    <button onclick="press('1')" class="key-btn">1</button>
+                    <button onclick="press('2')" class="key-btn">2</button>
+                    <button onclick="press('3')" class="key-btn">3</button>
+                    <button onclick="press('-')" class="key-btn operator">-</button>
+                </div>
+                <div class="key-row">
+                    <button onclick="press('0')" class="key-btn w-2x">0</button>
+                    <button onclick="press('.')" class="key-btn">.</button>
+                    <button onclick="press('C')" class="key-btn clear">C</button>
+                </div>
+                <div class="key-row">
+                    <button onclick="press('=')" class="key-btn w-3x equals">=</button>
+                    <button onclick="press('+')" class="key-btn operator">+</button>
+                </div>
             </div>
 
             <button onclick="saveBill()" class="save-btn">💾 SAVE BILL LOG</button>
@@ -156,17 +167,43 @@
                 displayEl.innerText = '0';
                 formulaEl.innerText = '';
             } else if (val === '=') {
+                if (!currentDisplay) return;
+                
+                // Secure Mathematical Parser (Passes GitHub Security Check Actions)
                 try {
-                    if (!currentDisplay) return;
                     formulaHistoryStr = currentDisplay;
                     formulaEl.innerText = formulaHistoryStr + ' =';
                     
-                    let result = new Function(`return ${currentDisplay}`)();
-                    currentDisplay = String(Number(result).toFixed(2));
+                    let tokens = currentDisplay.match(/(\d+\.?\d*)|([\+\-\*\/])/g);
+                    if (!tokens) return;
+                    
+                    // First Pass: Multiplications & Divisions
+                    for (let i = 0; i < tokens.length; i++) {
+                        if (tokens[i] === '*' || tokens[i] === '/') {
+                            let prev = parseFloat(tokens[i - 1]);
+                            let next = parseFloat(tokens[i + 1]);
+                            let res = tokens[i] === '*' ? prev * next : prev / next;
+                            tokens.splice(i - 1, 3, res);
+                            i--;
+                        }
+                    }
+                    
+                    // Second Pass: Additions & Subtractions
+                    let total = parseFloat(tokens[0]);
+                    for (let i = 1; i < tokens.length; i += 2) {
+                        let op = tokens[i];
+                        let nextVal = parseFloat(tokens[i + 1]);
+                        if (op === '+') total += nextVal;
+                        if (op === '-') total -= nextVal;
+                    }
+                    
+                    currentDisplay = String(Number(total).toFixed(2));
                     displayEl.innerText = currentDisplay;
-                } catch {
+                } catch (err) {
                     alert('Calculation error');
+                    currentDisplay = '';
                     formulaHistoryStr = '';
+                    displayEl.innerText = '0';
                     formulaEl.innerText = '';
                 }
             } else {
