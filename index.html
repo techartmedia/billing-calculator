@@ -23,10 +23,12 @@
         /* Full Screen Dynamic Layout Viewports */
         .workspace-view { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
 
-        /* Fixed Monitor Display Panel to Prevent Clipping */
-        .monitor-panel { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 12px 8px; min-height: 110px; max-height: 130px; width: 100%; overflow: hidden; margin-bottom: 4px; }
-        .history-expression { color: #8e8e93; font-size: 22px; font-weight: 400; min-height: 26px; text-align: right; width: 100%; overflow-x: auto; white-space: nowrap; margin-bottom: 6px; }
-        .main-total-output { color: #ffffff; font-size: 56px; font-weight: 300; text-align: right; width: 100%; overflow-x: auto; white-space: nowrap; line-height: 1.1; }
+        /* Enhanced Monitor Display Panel to handle Infinite/Lengthy formulas */
+        .monitor-panel { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 12px 8px; min-height: 120px; width: 100%; margin-bottom: 4px; overflow: hidden; }
+        .history-expression { color: #8e8e93; font-size: 18px; font-weight: 400; text-align: right; width: 100%; word-break: break-all; max-height: 60px; overflow-y: auto; margin-bottom: 6px; line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; }
+        
+        /* Main output configured to support horizontal auto-scroll when values exceed viewport bounds */
+        .main-total-output { color: #ffffff; font-size: 52px; font-weight: 300; text-align: right; width: 100%; overflow-x: auto; white-space: nowrap; line-height: 1.1; scroll-behavior: smooth; }
         .history-expression::-webkit-scrollbar, .main-total-output::-webkit-scrollbar { display: none; }
 
         /* Native iOS Segmented Method Picker */
@@ -108,7 +110,7 @@
             <div class="phone-keypad">
                 <div class="keypad-row">
                     <button onclick="inputKey('C')" class="btn-cell utility">C</button>
-                    <button onclick="inputKey('+/-')" class="btn-cell utility">±</button>
+                    <button onclick="inputKey('BACKSPACE')" class="btn-cell utility">⌫</button>
                     <button onclick="inputKey('%')" class="btn-cell utility">%</button>
                     <button onclick="inputKey('/')" class="btn-cell operator">÷</button>
                 </div>
@@ -147,8 +149,10 @@
     </div>
 
     <script>
-        let currentStringInput = '';
-        let temporaryFormulaStorage = '';
+        let currentOperandSegment = '0';
+        let rollingMathFormulaSequence = [];
+        let isResultDisplayState = false;
+        
         let activePaymentMode = 'CASH';
         let transactionLogsDatabase = JSON.parse(localStorage.getItem('billing_logs')) || [];
 
@@ -157,91 +161,174 @@
         function inputKey(keyValue) {
             const displayOutputElement = document.getElementById('calcDisplay');
             const calculationFormulaElement = document.getElementById('calcFormula');
-            
+
             if (keyValue === 'C') {
-                currentStringInput = '';
-                temporaryFormulaStorage = '';
+                currentOperandSegment = '0';
+                rollingMathFormulaSequence = [];
+                isResultDisplayState = false;
                 displayOutputElement.innerText = '0';
                 calculationFormulaElement.innerText = '';
-            } else if (keyValue === '+/-') {
-                if(!currentStringInput || currentStringInput === '0') return;
-                if(currentStringInput.startsWith('-')) {
-                    currentStringInput = currentStringInput.substring(1);
-                } else {
-                    currentStringInput = '-' + currentStringInput;
+                return;
+            }
+
+            if (keyValue === 'BACKSPACE') {
+                if (isResultDisplayState) {
+                    calculationFormulaElement.innerText = '';
+                    return;
                 }
-                displayOutputElement.innerText = currentStringInput;
-            } else if (keyValue === '%') {
-                if(!currentStringInput) return;
-                let parsedVal = parseFloat(currentStringInput) / 100;
-                currentStringInput = String(parsedVal);
-                displayOutputElement.innerText = currentStringInput;
-            } else if (keyValue === '=') {
-                if (!currentStringInput) return;
-                
-                try {
-                    temporaryFormulaStorage = currentStringInput;
-                    calculationFormulaElement.innerText = temporaryFormulaStorage + ' =';
-                    
-                    let componentsList = currentStringInput.match(/(\d+\.?\d*)|([\+\-\*\/])/g);
-                    if (!componentsList) return;
-                    
-                    // High Precedence Operations Execution: Multiplications and Divisions
-                    for (let index = 0; index < componentsList.length; index++) {
-                        if (componentsList[index] === '*' || componentsList[index] === '/') {
-                            let leftHandVal = parseFloat(componentsList[index - 1]);
-                            let rightHandVal = parseFloat(componentsList[index + 1]);
-                            let operationsResult = componentsList[index] === '*' ? leftHandVal * rightHandVal : leftHandVal / rightHandVal;
-                            componentsList.splice(index - 1, 3, operationsResult);
-                            index--;
+                if (currentOperandSegment.length > 0 && currentOperandSegment !== '0') {
+                    currentOperandSegment = currentOperandSegment.slice(0, -1);
+                    if (currentOperandSegment === '' || currentOperandSegment === '-') {
+                        currentOperandSegment = '0';
+                    }
+                    displayOutputElement.innerText = currentOperandSegment;
+                    autoScrollDisplayToRight();
+                }
+                return;
+            }
+
+            if (keyValue === '%') {
+                if (currentOperandSegment === '0' || currentOperandSegment === '') return;
+                currentOperandSegment = String(parseFloat(currentOperandSegment) / 100);
+                displayOutputElement.innerText = currentOperandSegment;
+                autoScrollDisplayToRight();
+                return;
+            }
+
+            if (['+', '-', '*', '/'].includes(keyValue)) {
+                if (isResultDisplayState) {
+                    rollingMathFormulaSequence = [currentOperandSegment, keyValue];
+                    isResultDisplayState = false;
+                } else {
+                    if (currentOperandSegment !== '') {
+                        rollingMathFormulaSequence.push(currentOperandSegment);
+                    }
+                    if (['+', '-', '*', '/'].includes(rollingMathFormulaSequence[rollingMathFormulaSequence.length - 1]) && currentOperandSegment === '') {
+                        rollingMathFormulaSequence[rollingMathFormulaSequence.length - 1] = keyValue; 
+                    } else {
+                        if (rollingMathFormulaSequence.length > 0) {
+                            let liveCalculatedIntermediary = evaluateFormulaArray(rollingMathFormulaSequence);
+                            displayOutputElement.innerText = String(liveCalculatedIntermediary);
                         }
                     }
-                    
-                    // Low Precedence Operations Execution: Additions and Subtractions
-                    let rollingSumTotal = parseFloat(componentsList[0]);
-                    for (let index = 1; index < componentsList.length; index += 2) {
-                        let dynamicOperator = componentsList[index];
-                        let targetNextValue = parseFloat(componentsList[index + 1]);
-                        if (dynamicOperator === '+') rollingSumTotal += targetNextValue;
-                        if (dynamicOperator === '-') rollingSumTotal -= targetNextValue;
-                    }
-                    
-                    currentStringInput = String(Number(rollingSumTotal).toFixed(2));
-                    displayOutputElement.innerText = currentStringInput;
-                } catch (parsingError) {
-                    alert('Invalid Math Statement Structure');
-                    currentStringInput = '';
-                    temporaryFormulaStorage = '';
-                    displayOutputElement.innerText = '0';
-                    calculationFormulaElement.innerText = '';
                 }
-            } else {
-                if (currentStringInput && !isNaN(keyValue) && temporaryFormulaStorage !== '' && currentStringInput === displayOutputElement.innerText) {
-                    currentStringInput = '';
-                    temporaryFormulaStorage = '';
-                    calculationFormulaElement.innerText = '';
+                
+                // Instantly update layout stack array
+                if (rollingMathFormulaSequence[rollingMathFormulaSequence.length - 1] !== keyValue) {
+                    rollingMathFormulaSequence.push(keyValue);
                 }
-                currentStringInput += keyValue;
-                displayOutputElement.innerText = currentStringInput;
+                
+                currentOperandSegment = '';
+                calculationFormulaElement.innerText = formatFormulaOutput(rollingMathFormulaSequence);
+                autoScrollFormulaToBottom();
+                autoScrollDisplayToRight();
+                return;
             }
+
+            if (keyValue === '=') {
+                if (currentOperandSegment !== '') {
+                    rollingMathFormulaSequence.push(currentOperandSegment);
+                }
+                if (rollingMathFormulaSequence.length === 0) return;
+                if (['+', '-', '*', '/'].includes(rollingMathFormulaSequence[rollingMathFormulaSequence.length - 1])) {
+                    rollingMathFormulaSequence.pop();
+                }
+
+                calculationFormulaElement.innerText = formatFormulaOutput(rollingMathFormulaSequence) + ' =';
+                
+                let evaluationResult = evaluateFormulaArray(rollingMathFormulaSequence);
+                currentOperandSegment = String(evaluationResult);
+                displayOutputElement.innerText = currentOperandSegment;
+                
+                rollingMathFormulaSequence = [];
+                isResultDisplayState = true;
+                autoScrollFormulaToBottom();
+                autoScrollDisplayToRight();
+                return;
+            }
+
+            // Number or Dot handling
+            if (isResultDisplayState) {
+                currentOperandSegment = '';
+                isResultDisplayState = false;
+            }
+
+            if (keyValue === '.') {
+                if (currentOperandSegment.includes('.')) return; 
+                if (currentOperandSegment === '') currentOperandSegment = '0';
+            }
+
+            if (currentOperandSegment === '0' && keyValue !== '.') {
+                currentOperandSegment = keyValue;
+            } else {
+                currentOperandSegment += keyValue;
+            }
+            displayOutputElement.innerText = currentOperandSegment;
+            
+            // Critical visual tracking layout fix
+            autoScrollDisplayToRight();
+        }
+
+        function formatFormulaOutput(arr) {
+            return arr.join(' ').replace(/\*/g, '×').replace(/\//g, '÷');
+        }
+
+        function autoScrollFormulaToBottom() {
+            const calculationFormulaElement = document.getElementById('calcFormula');
+            calculationFormulaElement.scrollTop = calculationFormulaElement.scrollHeight;
+        }
+
+        // Moves view focus dynamically to right-edge so user can track long digits instantly
+        function autoScrollDisplayToRight() {
+            const displayOutputElement = document.getElementById('calcDisplay');
+            setTimeout(() => {
+                displayOutputElement.scrollLeft = displayOutputElement.scrollWidth;
+            }, 10);
+        }
+
+        function evaluateFormulaArray(inputTokens) {
+            let tokens = [...inputTokens];
+            if (tokens.length === 0) return 0;
+
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i] === '*' || tokens[i] === '/') {
+                    let left = parseFloat(tokens[i - 1]);
+                    let right = parseFloat(tokens[i + 1]);
+                    let res = tokens[i] === '*' ? left * right : left / right;
+                    tokens.splice(i - 1, 3, res);
+                    i--;
+                }
+            }
+
+            let finalSum = parseFloat(tokens[0]) || 0;
+            for (let i = 1; i < tokens.length; i += 2) {
+                let op = tokens[i];
+                let nextVal = parseFloat(tokens[i + 1]);
+                if (op === '+') finalSum += nextVal;
+                if (op === '-') finalSum -= nextVal;
+            }
+
+            return parseFloat(finalSum.toFixed(4));
         }
 
         function updatePaymentSelection(targetSelectionMode) {
             activePaymentMode = targetSelectionMode;
-            const cashToggleOptionButton = document.getElementById('modeCash');
-            const onlineToggleOptionButton = document.getElementById('modeOnline');
+            const cashBtn = document.getElementById('modeCash');
+            const onlineBtn = document.getElementById('modeOnline');
             
             if (targetSelectionMode === 'CASH') {
-                cashToggleOptionButton.className = "method-option selected-cash";
-                onlineToggleOptionButton.className = "method-option";
+                cashBtn.className = "method-option selected-cash";
+                onlineBtn.className = "method-option";
             } else {
-                cashToggleOptionButton.className = "method-option";
-                onlineToggleOptionButton.className = "method-option selected-online";
+                cashBtn.className = "method-option";
+                onlineBtn.className = "method-option selected-online";
             }
         }
 
         function commitEntryToDatabase() {
-            const evaluationAmount = parseFloat(currentStringInput);
+            const evaluationAmount = parseFloat(currentOperandSegment);
+            const activeFormulaLabel = document.getElementById('calcFormula').innerText || `${evaluationAmount}`;
+            
             if (isNaN(evaluationAmount) || evaluationAmount <= 0) {
                 alert('Perform calculations or input a sum before logging.');
                 return;
@@ -250,13 +337,12 @@
             const activeDateInstance = new Date();
             const customizedDateString = activeDateInstance.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
             const customizedTimeString = activeDateInstance.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-            const databaseStringFormula = temporaryFormulaStorage || `${evaluationAmount}`;
             const uniqueDatabaseRowId = Date.now();
 
             const newlyCreatedLogObject = { 
                 id: uniqueDatabaseRowId, 
                 amount: evaluationAmount, 
-                formula: databaseStringFormula, 
+                formula: activeFormulaLabel, 
                 mode: activePaymentMode, 
                 date: customizedDateString, 
                 time: customizedTimeString 
@@ -267,8 +353,9 @@
             
             alert(`Record logged successfully: ₹${evaluationAmount.toFixed(2)} [${activePaymentMode}]`);
             
-            currentStringInput = '';
-            temporaryFormulaStorage = '';
+            currentOperandSegment = '0';
+            rollingMathFormulaSequence = [];
+            isResultDisplayState = false;
             document.getElementById('calcDisplay').innerText = '0';
             document.getElementById('calcFormula').innerText = '';
             
@@ -372,82 +459,4 @@
         }
     </script>
 </body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POS Billing Calculator</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-transitional">
-    
-    <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, Helvetica, sans-serif; margin: 0; padding: 0; }
-        html, body { height: 100%; width: 100%; overflow: hidden; background-color: #000000; color: #ffffff; user-select: none; -webkit-user-select: none; }
-        
-        .app-shell { display: flex; flex-direction: column; height: 100%; width: 100%; justify-content: space-between; padding: 16px 20px 24px 20px; }
-        .hidden { display: none !important; }
-
-        /* Top System Navbar Toggle Tabs */
-        .nav-header { display: flex; background-color: #1c1c1e; border-radius: 14px; padding: 4px; margin-bottom: 8px; flex-shrink: 0; }
-        .nav-btn { flex: 1; padding: 12px 0; font-size: 14px; font-weight: 600; text-align: center; border: none; background: transparent; color: #8e8e93; border-radius: 11px; cursor: pointer; transition: all 0.2s ease; }
-        .nav-btn.active { background-color: #2c2c2e; color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        /* Full Screen Dynamic Layout Viewports */
-        .workspace-view { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
-
-        /* Fixed Monitor Display Panel to Prevent Clipping */
-        .monitor-panel { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 12px 8px; min-height: 110px; max-height: 130px; width: 100%; overflow: hidden; margin-bottom: 4px; }
-        .history-expression { color: #8e8e93; font-size: 22px; font-weight: 400; min-height: 26px; text-align: right; width: 100%; overflow-x: auto; white-space: nowrap; margin-bottom: 6px; }
-        .main-total-output { color: #ffffff; font-size: 56px; font-weight: 300; text-align: right; width: 100%; overflow-x: auto; white-space: nowrap; line-height: 1.1; }
-        .history-expression::-webkit-scrollbar, .main-total-output::-webkit-scrollbar { display: none; }
-
-        /* Native iOS Segmented Method Picker */
-        .payment-label { font-size: 11px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding-left: 4px; }
-        .payment-toggle-group { display: flex; background-color: #1c1c1e; border-radius: 14px; padding: 3px; margin-bottom: 16px; flex-shrink: 0; }
-        .method-option { flex: 1; padding: 12px 0; font-size: 13px; font-weight: 700; text-align: center; border: none; background: transparent; color: #aeaeae; border-radius: 11px; cursor: pointer; }
-        .method-option.selected-cash { background-color: #34c759; color: #ffffff; font-weight: 700; box-shadow: 0 2px 6px rgba(52, 199, 89, 0.3); }
-        .method-option.selected-online { background-color: #5856d6; color: #ffffff; font-weight: 700; box-shadow: 0 2px 6px rgba(88, 86, 214, 0.3); }
-
-        /* Compact Keypad Container */
-        .phone-keypad { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; padding: 0 4px; flex-shrink: 0; }
-        .keypad-row { display: flex; gap: 14px; justify-content: space-between; width: 100%; }
-        
-        /* Reduced Size Circular Buttons */
-        .btn-cell { width: 62px; height: 62px; border-radius: 50%; border: none; font-size: 24px; font-weight: 400; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ffffff; background-color: #333333; transition: opacity 0.1s; touch-action: manipulation; }
-        .btn-cell:active { opacity: 0.6; }
-        
-        /* Layout Style Overrides */
-        .btn-cell.wide-capsule { width: 138px; border-radius: 40px; padding-left: 24px; justify-content: flex-start; }
-        .btn-cell.utility { background-color: #a5a5a5; color: #000000; font-weight: 500; font-size: 22px; }
-        .btn-cell.operator { background-color: #ff9f0a; color: #ffffff; font-size: 28px; }
-
-        /* Bottom Action Footer Button */
-        .commit-log-action { width: 100%; background-color: #24b64b; color: #ffffff; border: none; padding: 16px; font-size: 16px; font-weight: 700; border-radius: 16px; cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 4px 12px rgba(36, 182, 75, 0.2); flex-shrink: 0; }
-        .commit-log-action:active { opacity: 0.8; }
-
-        /* Database History Management Layout View */
-        .history-ledger-container { flex: 1; overflow-y: auto; background-color: #000000; width: 100%; padding-top: 4px; }
-        .empty-placeholder { text-align: center; color: #8e8e93; font-size: 15px; margin-top: 100px; }
-        
-        /* Log Entries List Design */
-        .ledger-card { background-color: #1c1c1e; border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
-        .ledger-summary-row { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .ledger-summary-row:active { background-color: #2c2c2e; }
-        .record-value { font-size: 22px; font-weight: 600; font-family: monospace; }
-        .record-value.cash-label { color: #30d158; }
-        .record-value.online-label { color: #5e5ce6; }
-        .record-metadata { font-size: 11px; font-weight: 600; color: #8e8e93; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.3px; }
-        .record-metadata span { color: #5e5ce6; font-weight: normal; text-transform: none; }
-        .record-timestamp { text-align: right; }
-        .record-date-str { font-size: 13px; font-weight: 600; color: #ffffff; }
-        .record-time-str { font-size: 11px; color: #8e8e93; margin-top: 4px; }
-
-        /* Expandable Accordion Menu */
-        .ledger-drawer { padding: 16px; background-color: #121214; border-top: 1px solid #2c2c2e; }
-        .breakdown-display { font-size: 14px; color: #e5e5ea; font-family: monospace; background-color: #1c1c1e; padding: 12px; border-radius: 10px; border: 1px solid #2c2c2e; margin-top: 6px; overflow-x: auto; }
-        .drawer-subheading { font-size: 11px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .control-panel-row { display: flex; gap: 10px; margin-top: 14px; }
-        .panel-action-btn { flex: 1; border: none; padding: 10px; font-size: 13px; font-weight: 6
+</html>
