@@ -3,119 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POS Billing Calculator</title>
+    <title>POS Pro Terminal</title>
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; margin: 0; padding: 0; }
-        html, body { height: 100%; width: 100%; overflow: hidden; background-color: #000000; color: #ffffff; }
-        .app-shell { display: flex; flex-direction: column; height: 100%; padding: 10px 16px; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #000; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; margin: 0; }
         
-        /* Editable Input Field */
-        .main-total-input { 
-            width: 100%; background: transparent; border: none; color: #ffffff; 
-            font-size: 48px; font-weight: 300; text-align: right; 
-            outline: none; margin: 20px 0; caret-color: #ff9f0a; 
-        }
-        
-        .history-expression { color: #8e8e93; font-size: 16px; text-align: right; height: 20px; }
-        
-        .payment-toggle-group { display: flex; background-color: #1c1c1e; border-radius: 8px; padding: 2px; margin-bottom: 10px; }
-        .method-option { flex: 1; padding: 8px; font-size: 12px; font-weight: 700; border: none; background: transparent; color: #aeaeae; border-radius: 6px; cursor: pointer; }
-        .method-option.selected-cash { background-color: #34c759; color: #ffffff; }
-        .method-option.selected-online { background-color: #5856d6; color: #ffffff; }
+        /* Navigation */
+        .nav { display: flex; padding: 10px; gap: 10px; flex-shrink: 0; }
+        .nav button { flex: 1; padding: 10px; border-radius: 8px; border: none; background: #1c1c1e; color: #8e8e93; font-weight: 600; }
+        .nav button.active { background: #333; color: #fff; }
 
-        .phone-keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
-        .btn-cell { height: 50px; border-radius: 25px; border: none; font-size: 20px; background-color: #333333; color: white; }
-        .btn-cell.operator { background-color: #ff9f0a; }
-        .btn-cell.utility { background-color: #a5a5a5; color: black; }
-
-        .commit-log-action { width: 100%; padding: 12px; border-radius: 10px; border: none; background-color: #24b64b; color: white; font-weight: bold; }
+        /* Calculator View */
+        #calcView { flex: 1; display: flex; flex-direction: column; padding: 10px; overflow: hidden; }
+        #display { width: 100%; background: transparent; border: none; color: #fff; font-size: 40px; text-align: right; outline: none; margin: 10px 0; caret-color: #ff9f0a; }
+        .keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex-grow: 1; }
+        button.key { border-radius: 50px; border: none; font-size: 20px; background: #333; color: #fff; }
+        button.op { background: #ff9f0a; }
+        button.util { background: #555; }
         
-        .history-ledger-container { flex: 1; overflow-y: auto; margin-top: 10px; }
-        .ledger-card { background-color: #1c1c1e; padding: 12px; border-radius: 12px; margin-bottom: 8px; }
-        .hidden { display: none; }
+        /* Log View */
+        #logView { flex: 1; overflow-y: auto; padding: 10px; }
+        .card { background: #1c1c1e; padding: 12px; border-radius: 12px; margin-bottom: 10px; }
+        .card-val { font-size: 18px; font-weight: bold; color: #30d158; }
+        .card-breakdown { font-size: 12px; color: #aaa; margin: 5px 0; }
+        .btn-act { padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="app-shell">
-    <div id="calculatorView">
-        <div id="calcFormula" class="history-expression"></div>
-        <input type="text" id="calcDisplay" class="main-total-input" value="0" inputmode="decimal">
-
-        <div class="payment-toggle-group">
-            <button id="modeCash" class="method-option selected-cash" onclick="updateMode('CASH')">CASH</button>
-            <button id="modeOnline" class="method-option" onclick="updateMode('ONLINE')">ONLINE</button>
-        </div>
-
-        <div class="phone-keypad">
-            <button class="btn-cell utility" onclick="key('C')">C</button>
-            <button class="btn-cell utility" onclick="key('BACKSPACE')">⌫</button>
-            <button class="btn-cell utility" onclick="key('%')">%</button>
-            <button class="btn-cell operator" onclick="key('/')">÷</button>
-            <button class="btn-cell" onclick="key('7')">7</button>
-            <button class="btn-cell" onclick="key('8')">8</button>
-            <button class="btn-cell" onclick="key('9')">9</button>
-            <button class="btn-cell operator" onclick="key('*')">×</button>
-            <button class="btn-cell" onclick="key('4')">4</button>
-            <button class="btn-cell" onclick="key('5')">5</button>
-            <button class="btn-cell" onclick="key('6')">6</button>
-            <button class="btn-cell operator" onclick="key('-')">−</button>
-            <button class="btn-cell" onclick="key('1')">1</button>
-            <button class="btn-cell" onclick="key('2')">2</button>
-            <button class="btn-cell" onclick="key('3')">3</button>
-            <button class="btn-cell operator" onclick="key('+')">+</button>
-            <button class="btn-cell" style="grid-column: span 2;" onclick="key('0')">0</button>
-            <button class="btn-cell" onclick="key('.')">.</button>
-            <button class="btn-cell operator" onclick="key('=')">=</button>
-        </div>
-        <button class="commit-log-action" onclick="saveLog()">SAVE TRANSACTION</button>
-    </div>
-
-    <div id="historyView" class="history-ledger-container hidden">
-        <div id="logList"></div>
-    </div>
+<div class="nav">
+    <button id="btnCalc" class="active" onclick="setView('calc')">Calculator</button>
+    <button id="btnLog" onclick="setView('log')">Logs</button>
 </div>
 
+<div id="calcView">
+    <input type="text" id="display" value="0" inputmode="decimal">
+    <div class="keypad">
+        <button class="key util" onclick="ins('C')">C</button><button class="key util" onclick="backspace()">⌫</button><button class="key util" onclick="ins('%')">%</button><button class="key op" onclick="ins('/')">÷</button>
+        <button class="key" onclick="ins('7')">7</button><button class="key" onclick="ins('8')">8</button><button class="key" onclick="ins('9')">9</button><button class="key op" onclick="ins('*')">×</button>
+        <button class="key" onclick="ins('4')">4</button><button class="key" onclick="ins('5')">5</button><button class="key" onclick="ins('6')">6</button><button class="key op" onclick="ins('-')">-</button>
+        <button class="key" onclick="ins('1')">1</button><button class="key" onclick="ins('2')">2</button><button class="key" onclick="ins('3')">3</button><button class="key op" onclick="ins('+')">+</button>
+        <button class="key" style="grid-column: span 2;" onclick="ins('0')">0</button><button class="key" onclick="ins('.')">.</button><button class="key op" onclick="calc()">=</button>
+    </div>
+    <button style="width:100%; padding:15px; margin-top:10px; border-radius:10px; background:#24b64b; color:white; font-weight:bold; border:none;" onclick="save()">SAVE TRANSACTION</button>
+</div>
+
+<div id="logView" class="hidden"></div>
+
 <script>
-    let mode = 'CASH';
-    const display = document.getElementById('calcDisplay');
+    let logs = JSON.parse(localStorage.getItem('pos_logs') || '[]');
+    const disp = document.getElementById('display');
 
-    function key(val) {
-        if (val === 'C') display.value = '0';
-        else if (val === 'BACKSPACE') display.value = display.value.slice(0, -1) || '0';
-        else if (val === '=') display.value = eval(display.value.replace(/×/g, '*').replace(/÷/g, '/'));
-        else display.value = (display.value === '0') ? val : display.value + val;
+    function setView(v) {
+        document.getElementById('calcView').classList.toggle('hidden', v !== 'calc');
+        document.getElementById('logView').classList.toggle('hidden', v !== 'log');
+        document.getElementById('btnCalc').classList.toggle('active', v === 'calc');
+        document.getElementById('btnLog').classList.toggle('active', v === 'log');
+        if(v === 'log') render();
     }
 
-    function updateMode(m) {
-        mode = m;
-        document.getElementById('modeCash').className = m === 'CASH' ? 'method-option selected-cash' : 'method-option';
-        document.getElementById('modeOnline').className = m === 'ONLINE' ? 'method-option selected-online' : 'method-option';
+    function ins(v) { 
+        if (v === 'C') disp.value = '0';
+        else disp.value = (disp.value === '0') ? v : disp.value + v; 
     }
 
-    function saveLog() {
-        let logs = JSON.parse(localStorage.getItem('logs') || '[]');
-        logs.unshift({ id: Date.now(), val: display.value, mode, date: new Date().toLocaleString() });
-        localStorage.setItem('logs', JSON.stringify(logs));
-        render();
+    function backspace() { disp.value = disp.value.slice(0, -1) || '0'; }
+
+    function calc() { 
+        try { 
+            let result = eval(disp.value.replace(/×/g, '*').replace(/÷/g, '/')); 
+            disp.value = result;
+        } catch { disp.value = 'Error'; } 
+    }
+
+    function save() {
+        logs.unshift({ id: Date.now(), val: disp.value, breakdown: disp.value, time: new Date().toLocaleString() });
+        localStorage.setItem('pos_logs', JSON.stringify(logs));
+        alert('Transaction Saved');
+        disp.value = '0';
     }
 
     function render() {
-        let logs = JSON.parse(localStorage.getItem('logs') || '[]');
-        document.getElementById('logList').innerHTML = logs.map(l => `
-            <div class="ledger-card">
-                <div>${l.val} - ${l.mode}</div>
-                <div style="font-size:10px">${l.date}</div>
+        document.getElementById('logView').innerHTML = logs.map(l => `
+            <div class="card">
+                <div class="card-val">₹${l.val}</div>
+                <div class="card-breakdown">Breakdown: ${l.breakdown}</div>
+                <div style="font-size:10px; color:#666;">${l.time}</div>
+                <div style="margin-top:10px;">
+                    <button class="btn-act" onclick="edit(${l.id})">✏️ Edit</button>
+                    <button class="btn-act" onclick="del(${l.id})">🗑️ Delete</button>
+                </div>
             </div>`).join('');
     }
 
-    // Toggle view
-    function toggle() {
-        document.getElementById('calculatorView').classList.toggle('hidden');
-        document.getElementById('historyView').classList.toggle('hidden');
+    function edit(id) {
+        let entry = logs.find(l => l.id === id);
+        let newAmt = prompt("Edit Amount:", entry.val);
+        let newBrk = prompt("Edit Breakdown:", entry.breakdown);
+        if(newAmt !== null) {
+            entry.val = newAmt;
+            entry.breakdown = newBrk;
+            localStorage.setItem('pos_logs', JSON.stringify(logs));
+            render();
+        }
     }
-    
-    render();
+
+    function del(id) { 
+        if(confirm('Delete this record?')) {
+            logs = logs.filter(l => l.id !== id); 
+            localStorage.setItem('pos_logs', JSON.stringify(logs)); 
+            render();
+        }
+    }
 </script>
 </body>
 </html>
