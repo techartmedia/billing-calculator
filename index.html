@@ -156,7 +156,6 @@
     </div>
 
     <script>
-        // Inline Offline Service Worker Engine Injection Configuration
         if ('serviceWorker' in navigator) {
             const swCode = `
                 const CACHE_NAME = 'pos-calc-offline-v1';
@@ -328,6 +327,46 @@
             return parseFloat(finalSum.toFixed(4));
         }
 
+        // PARSER ENGINE FOR LOGS EDIT SCREEN DETECTING MATH STRINGS
+        function parseAndEvaluateStringFormula(formulaString) {
+            // Clean custom operators or formatting symbols back to standard programming syntax
+            let normalized = formulaString
+                .replace(/🧮/g, '')
+                .replace(/×/g, '*')
+                .replace(/÷/g, '/')
+                .replace(/=/g, '')
+                .trim();
+
+            // Segment operators dynamically preserving strings
+            let matches = normalized.match(/(-?\d+\.?\d*)|([\+\-\*\/])/g);
+            if (!matches) return 0;
+
+            // Build clear token configurations cleanly array tracked
+            let cleanTokens = [];
+            matches.forEach(token => {
+                if (token.trim() !== "") {
+                    cleanTokens.push(token.trim());
+                }
+            });
+
+            return evaluateFormulaArray(cleanTokens);
+        }
+
+        // TRIGGER ON-THE-FLY REALTIME UPDATES WHEN LOG TYPED
+        function handleInlineFormulaTyping(targetRecordId) {
+            const traceInputBox = document.getElementById(`edit-formula-${targetRecordId}`);
+            const amountInputNode = document.getElementById(`edit-amount-${targetRecordId}`);
+            
+            if (!traceInputBox || !amountInputNode) return;
+
+            let liveStringFormula = traceInputBox.innerText;
+            let computedBalanceResult = parseAndEvaluateStringFormula(liveStringFormula);
+
+            if (!isNaN(computedBalanceResult) && computedBalanceResult >= 0) {
+                amountInputNode.value = computedBalanceResult.toFixed(2);
+            }
+        }
+
         function updatePaymentSelection(targetSelectionMode) {
             activePaymentMode = targetSelectionMode;
             const cashBtn = document.getElementById('modeCash');
@@ -440,11 +479,11 @@
                     
                     <div id="details-${itemRow.id}" class="ledger-drawer hidden">
                         <div>
-                            <span class="drawer-subheading">Edit Amount (₹)</span>
+                            <span class="drawer-subheading">Final Amount (₹) - Autocalculated</span>
                             <input type="number" step="0.01" id="edit-amount-${itemRow.id}" class="editable-amount-input" value="${Number(itemRow.amount).toFixed(2)}">
                             
-                            <span class="drawer-subheading">Edit Mathematical Composition Trace (Editable Text)</span>
-                            <div contenteditable="true" id="edit-formula-${itemRow.id}" class="breakdown-display">🧮 ${itemRow.formula || itemRow.amount}</div>
+                            <span class="drawer-subheading">Edit Mathematical Composition Trace</span>
+                            <div contenteditable="true" id="edit-formula-${itemRow.id}" class="breakdown-display" oninput="handleInlineFormulaTyping(${itemRow.id})">🧮 ${itemRow.formula || itemRow.amount}</div>
                         </div>
                         
                         <div class="control-panel-row">
